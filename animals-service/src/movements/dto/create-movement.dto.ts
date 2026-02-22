@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { IsUUID, IsEnum, IsOptional, IsString } from 'class-validator';
 import { MovimientoTipo, MovimientoMotivo } from '@prisma/client';
 

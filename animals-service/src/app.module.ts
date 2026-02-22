@@ -7,6 +7,7 @@ import { AnimalsModule } from './animals/animals.module';
 import { MovementsModule } from './movements/movements.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt.guard';
+import { RefugioModule } from './refugio/refugio.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
     AnimalsModule,
     MovementsModule,
     AuthModule,
+    RefugioModule,
   ],
 
   providers: [

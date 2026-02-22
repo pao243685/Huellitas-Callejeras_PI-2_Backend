@@ -1,7 +1,13 @@
-/* eslint-disable */
 import {
-  Controller, Get, Post, Patch, Delete,
-  Param, Body, UploadedFile, UseInterceptors,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
