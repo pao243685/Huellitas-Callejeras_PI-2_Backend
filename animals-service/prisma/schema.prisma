@@ -41,6 +41,13 @@ enum MovimientoTipo {
   @@map("movimiento_tipo")
 }
 
+enum EstadoAnimal {
+  adoptado
+  adopcion
+  recuperacion
+  defuncion
+}
+
 
 model Rol {
   id_roles String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -91,6 +98,7 @@ model Usuario {
 model Animal {
   id_animal              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   nombre                 String       @db.VarChar(100)
+  estado                 EstadoAnimal @default(adopcion)
   especie                String       @db.VarChar(100)
   raza                   String       @db.VarChar(100)
   edad                   Int

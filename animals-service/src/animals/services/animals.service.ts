@@ -37,6 +37,7 @@ export class AnimalsService {
     const animal = await this.prisma.animal.create({
       data: {
         nombre: dto.nombre,
+        estado: dto.estado,
         especie: dto.especie,
         raza: dto.raza,
         edad: dto.edad,
@@ -67,8 +68,7 @@ export class AnimalsService {
     if (!existing) {
       throw new NotFoundException(`Animal ${id} no encontrado`);
     }
-
-    // Validaciones si vienen en PATCH
+    
     if (dto.refugio_id) {
       await this.validation.validateRefugio(dto.refugio_id);
     }

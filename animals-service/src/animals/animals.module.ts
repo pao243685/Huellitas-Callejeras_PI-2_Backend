@@ -5,8 +5,10 @@ import { AnimalsValidationService } from './services/animals.validation.service'
 import { AnimalEventPublisher } from '../events/publishers/animal-event-publisher';
 import { PrismaService } from '../shared/prisma/prisma.service';
 import { RabbitmqService } from '../shared/messaging/rabbitmq.service';
+import { MulterModule } from '@nestjs/platform-express/multer/multer.module';
 
 @Module({
+  imports: [MulterModule.register({ dest: './uploads/animals' })],
   controllers: [AnimalsController],
   providers: [
     AnimalsService,

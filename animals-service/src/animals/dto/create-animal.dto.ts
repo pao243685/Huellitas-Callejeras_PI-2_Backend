@@ -1,10 +1,13 @@
 /* eslint-disable */
 import { IsString, IsUUID, IsInt, IsBoolean, IsOptional, IsEnum, IsDecimal } from 'class-validator';
-import { TamanoLista, SexoAnimal } from '@prisma/client';
+import { TamanoLista, SexoAnimal, EstadoAnimal } from '@prisma/client';
 
 export class CreateAnimalDto {
   @IsString()
   nombre: string;
+
+  @IsEnum(EstadoAnimal)
+  estado: EstadoAnimal;
 
   @IsString()
   especie: string;
