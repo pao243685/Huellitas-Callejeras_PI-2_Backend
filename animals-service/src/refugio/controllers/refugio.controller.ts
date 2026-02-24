@@ -11,6 +11,7 @@ import {
 import { RefugioService } from '../services/refugio.service';
 import { CreateRefugioDto } from '../dto/create-refugio.dto';
 import { UpdateRefugioDto } from '../dto/update-refugio.dto';
+import { Public } from '../../auth/decorators/public.decorator';
 
 @Controller('refugios')
 export class RefugioController {
@@ -26,6 +27,7 @@ export class RefugioController {
     return this.refugioService.findOne(id);
   }
 
+  @Public()
   @Post()
   async create(@Body() dto: CreateRefugioDto) {
     return this.refugioService.create(dto);
