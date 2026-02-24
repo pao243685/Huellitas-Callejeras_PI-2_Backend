@@ -11,9 +11,11 @@ datasource db {
 
 
 enum TamanoLista {
+  miniatura
   pequeno  @map("pequeño")
   mediano
   grande
+  gigante
 
   @@map("tamano_lista")
 }
@@ -46,6 +48,7 @@ enum EstadoAnimal {
   adopcion
   recuperacion
   defuncion
+  extraviado
 }
 
 
