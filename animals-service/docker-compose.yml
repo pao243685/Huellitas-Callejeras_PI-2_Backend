@@ -2,16 +2,17 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
+    env_file: .env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Perlita1610
-      POSTGRES_DB: huellitas_callejeras
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
       - "5434:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d huellitas_callejeras"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -20,11 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://postgres:Perlita1610@db:5432/huellitas_callejeras?schema=public
-      PORT: 3001
-      JWT_SECRET: mi-super-secreto-jwt-cambiar-en-produccion-12345
+    env_file: .env
     depends_on:
       db:
         condition: service_healthy
