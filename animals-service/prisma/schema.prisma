@@ -55,10 +55,10 @@ enum EstadoAnimal {
 model Rol {
   id_roles String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   nombre   String @db.VarChar(100)
+  refugio_id String  @db.Uuid
 
-  // Relaciones
   usuarios Usuario[]
-
+  refugio     Refugio      @relation(fields: [refugio_id], references: [id_refugio], onDelete: Restrict)
   @@map("roles")
 }
 
@@ -76,6 +76,7 @@ model Refugio {
 
   usuarios Usuario[]
   animales Animal[]
+  roles Rol[]
 
   @@map("refugios")
 }
@@ -93,7 +94,7 @@ model Usuario {
 
   rol      Rol      @relation(fields: [rol_id], references: [id_roles], onDelete: Cascade)
   refugio  Refugio  @relation(fields: [refugio_id], references: [id_refugio], onDelete: Cascade)
-  animales Animal[]
+  
 
   @@map("usuarios")
 }
@@ -117,7 +118,6 @@ model Animal {
   usuario_id             String       @db.Uuid
   refugio_id             String       @db.Uuid
 
-  usuario     Usuario      @relation(fields: [usuario_id], references: [id_usuario], onDelete: Restrict)
   refugio     Refugio      @relation(fields: [refugio_id], references: [id_refugio], onDelete: Restrict)
   movimientos Movimiento[]
 

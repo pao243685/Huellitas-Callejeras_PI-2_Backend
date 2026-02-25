@@ -2,7 +2,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { AnimalsValidationService } from './animals.validation.service';
-import { AnimalEventPublisher } from '../../events/publishers/animal-event-publisher';
 import { CreateAnimalDto } from '../dto/create-animal.dto';
 import { UpdateAnimalDto } from '../dto/update-animal.dto';
 
@@ -11,7 +10,6 @@ export class AnimalsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly validation: AnimalsValidationService,
-    private readonly eventPublisher: AnimalEventPublisher,
   ) {}
 
   async findAll() {
@@ -55,8 +53,6 @@ export class AnimalsService {
       },
     });
 
-    await this.eventPublisher.publishAnimalCreated(animal);
-
     return animal;
   }
 
@@ -82,8 +78,6 @@ export class AnimalsService {
       data: dto,
     });
 
-    await this.eventPublisher.publishAnimalUpdated(animal);
-
     return animal;
   }
 
@@ -97,8 +91,6 @@ export class AnimalsService {
     }
 
     await this.prisma.animal.delete({ where: { id_animal: id } });
-
-    await this.eventPublisher.publishAnimalDeleted(id, animal.refugio_id);
 
     return { message: 'Animal eliminado', id };
   }
