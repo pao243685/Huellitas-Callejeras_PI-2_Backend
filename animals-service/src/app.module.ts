@@ -8,6 +8,7 @@ import { MovementsModule } from './movements/movements.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { RefugioModule } from './refugio/refugio.module';
+import { UserModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { RefugioModule } from './refugio/refugio.module';
     MovementsModule,
     AuthModule,
     RefugioModule,
+    UserModule,
   ],
 
   providers: [
