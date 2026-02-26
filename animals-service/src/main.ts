@@ -30,7 +30,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
-  console.log(`🐾 Animals Service corriendo en http://localhost:${port}`);
-  console.log(`📚 Swagger en http://localhost:${port}/api/docs`);
+  console.log(`Animals Service corriendo en http://localhost:${port}`);
+  console.log(`Swagger en http://localhost:${port}/api/docs`);
 }
 bootstrap();
