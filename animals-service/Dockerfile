@@ -23,7 +23,7 @@ COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/prisma ./prisma
 
 COPY entrypoint.sh ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
+RUN sed -i 's/\r//' ./entrypoint.sh && chmod +x ./entrypoint.sh
 
 EXPOSE 3001
 CMD ["./entrypoint.sh"]
