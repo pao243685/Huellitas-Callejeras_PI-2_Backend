@@ -17,9 +17,9 @@ import { UpdateRolDto } from '../dto/update-rol.dto';
 export class RolController {
   constructor(private readonly rolService: RolService) {}
 
-  @Get()
-  async findAll() {
-    return this.rolService.findAll();
+  @Get('refugio/:refugio_id')
+  async findByRefugio(@Param('refugio_id') refugioId: string) {
+    return this.rolService.findByrefugio(refugioId);
   }
 
   @Get(':id')

@@ -12,8 +12,13 @@ export class AnimalsService {
     private readonly validation: AnimalsValidationService,
   ) {}
 
-  async findAll() {
-    return this.prisma.animal.findMany();
+  async findByRefugio(refugioId: string) {
+    await this.validation.validateRefugio(refugioId);
+
+    return this.prisma.animal.findMany({
+      where: { refugio_id: refugioId },
+      include: { refugio: true },
+    });
   }
 
   async findOne(id: string) {

@@ -15,9 +15,9 @@ import { UpdateUsersDto } from '../dto/update-users.dto';
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
 
-  @Get()
-  async findAll() {
-    return this.userService.findAll();
+  @Get('refugio/:refugio_id')
+  async findByRefugio(@Param('refugio_id') refugioId: string) {
+    return this.userService.findByRefugio(refugioId);
   }
 
   @Get(':id')

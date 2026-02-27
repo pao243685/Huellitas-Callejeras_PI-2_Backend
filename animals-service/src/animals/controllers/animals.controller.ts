@@ -28,9 +28,9 @@ const storage = diskStorage({
 export class AnimalsController {
   constructor(private readonly animalsService: AnimalsService) {}
 
-  @Get()
-  async findAll() {
-    return this.animalsService.findAll();
+  @Get('refugio/:refugio_id')
+  async findByRefugio(@Param('refugio_id') refugioId: string) {
+    return this.animalsService.findByRefugio(refugioId);
   }
 
   @Get(':id')

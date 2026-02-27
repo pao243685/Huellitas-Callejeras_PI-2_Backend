@@ -2,13 +2,22 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/shared/prisma/prisma.service';
 import { CreateRolDto } from '../dto/create-rol.dto';
 import { UpdateRolDto } from '../dto/update-rol.dto';
+import { RolValidationService } from './rol.validate.service';
 
 @Injectable()
 export class RolService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly validation: RolValidationService,
+  ) {}
 
-  async findAll() {
-    return this.prisma.rol.findMany();
+  async findByrefugio(refugioId: string) {
+    await this.validation.validateRefugio(refugioId);
+
+    return this.prisma.rol.findMany({
+      where: { refugio_id: refugioId },
+      include: { refugio: true },
+    });
   }
 
   async findOne(id: string) {

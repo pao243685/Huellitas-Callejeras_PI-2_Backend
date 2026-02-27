@@ -11,8 +11,13 @@ export class UsersService {
     private readonly validation: UsersValidationService,
   ) {}
 
-  async findAll() {
-    return this.prisma.usuario.findMany();
+  async findByRefugio(refugioId: string) {
+    await this.validation.validateRefugio(refugioId);
+
+    return this.prisma.usuario.findMany({
+      where: { refugio_id: refugioId },
+      include: { refugio: true },
+    });
   }
 
   async findOne(id: string) {
