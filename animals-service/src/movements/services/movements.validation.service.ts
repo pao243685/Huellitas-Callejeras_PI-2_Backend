@@ -1,5 +1,8 @@
-/* eslint-disable */
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { MovimientoTipo, MovimientoMotivo } from '@prisma/client';
 
@@ -20,8 +23,15 @@ export class MovementsValidationService {
   }
 
   validateMotivoByTipo(tipo: MovimientoTipo, motivo: MovimientoMotivo) {
-    const motivosEntrada : MovimientoMotivo[] = [MovimientoMotivo.rescate, MovimientoMotivo.retorno];
-    const motivosSalida : MovimientoMotivo[] = [MovimientoMotivo.adopcion, MovimientoMotivo.defuncion];
+    const motivosEntrada: MovimientoMotivo[] = [
+      MovimientoMotivo.rescate,
+      MovimientoMotivo.retorno,
+    ];
+    const motivosSalida: MovimientoMotivo[] = [
+      MovimientoMotivo.adopcion,
+      MovimientoMotivo.defuncion,
+      MovimientoMotivo.extravio,
+    ] as const;
 
     if (tipo === MovimientoTipo.entrada && !motivosEntrada.includes(motivo)) {
       throw new BadRequestException(
@@ -31,7 +41,7 @@ export class MovementsValidationService {
 
     if (tipo === MovimientoTipo.salida && !motivosSalida.includes(motivo)) {
       throw new BadRequestException(
-        `Para tipo "salida" el motivo debe ser: adopcion o defuncion`,
+        `Para tipo "salida" el motivo debe ser: adopcion, defuncion o extravio`,
       );
     }
   }
