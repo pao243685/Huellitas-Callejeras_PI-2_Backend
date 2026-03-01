@@ -15,6 +15,7 @@ import { extname } from 'path';
 import { AnimalsService } from '../services/animals.service';
 import { CreateAnimalDto } from '../dto/create-animal.dto';
 import { UpdateAnimalDto } from '../dto/update-animal.dto';
+import { Roles } from '../../auth/decorators/roles.decorator';
 
 const storage = diskStorage({
   destination: './uploads/animals',
@@ -29,16 +30,19 @@ export class AnimalsController {
   constructor(private readonly animalsService: AnimalsService) {}
 
   @Get('refugio/:refugio_id')
+  @Roles('admin', 'propietario', 'colaborador')
   async findByRefugio(@Param('refugio_id') refugioId: string) {
     return this.animalsService.findByRefugio(refugioId);
   }
 
   @Get(':id')
+  @Roles('admin', 'propietario', 'colaborador')
   async findOne(@Param('id') id: string) {
     return this.animalsService.findOne(id);
   }
 
   @Post()
+  @Roles('admin', 'propietario')
   @UseInterceptors(FileInterceptor('imagen', { storage }))
   async create(
     @Body() dto: CreateAnimalDto,
@@ -51,6 +55,7 @@ export class AnimalsController {
   }
 
   @Patch(':id')
+  @Roles('admin', 'propietario')
   @UseInterceptors(FileInterceptor('imagen', { storage }))
   async update(
     @Param('id') id: string,
@@ -64,6 +69,7 @@ export class AnimalsController {
   }
 
   @Delete(':id')
+  @Roles('admin', 'propietario')
   async delete(@Param('id') id: string) {
     return this.animalsService.delete(id);
   }

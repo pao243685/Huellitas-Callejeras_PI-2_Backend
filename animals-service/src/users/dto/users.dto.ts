@@ -28,7 +28,7 @@ export class UsersDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: 'password123' })
+  @ApiProperty({ example: '' })
   @IsString()
   @MinLength(6)
   contrasena: string;

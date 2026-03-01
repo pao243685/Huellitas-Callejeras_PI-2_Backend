@@ -7,6 +7,7 @@ import { AnimalsModule } from './animals/animals.module';
 import { MovementsModule } from './movements/movements.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
 import { RefugioModule } from './refugio/refugio.module';
 import { UserModule } from './users/users.module';
 
@@ -29,6 +30,11 @@ import { UserModule } from './users/users.module';
     {
       provide: APP_GUARD,
       useExisting: JwtAuthGuard,
+    },
+    RolesGuard,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })

@@ -3,6 +3,7 @@ import { PrismaService } from '../../shared/prisma/prisma.service';
 import { UsersDto } from '../dto/users.dto';
 import { UpdateUsersDto } from '../dto/update-users.dto';
 import { UsersValidationService } from './usuario.validation.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -35,13 +36,15 @@ export class UsersService {
   async create(dto: UsersDto) {
     await this.validation.validateRefugio(dto.refugio_id);
 
+    const hashedPassword = await bcrypt.hash(dto.contrasena, 10); // agregar
+
     const user = await this.prisma.usuario.create({
       data: {
         nombre: dto.nombre,
         apellido_p: dto.apellido_p,
         apellido_m: dto.apellido_m,
         email: dto.email,
-        contrasena: dto.contrasena,
+        contrasena: hashedPassword, // cambiar dto.contrasena por hashedPassword
         activo: dto.activo,
         rol_id: dto.rol_id,
         refugio_id: dto.refugio_id,

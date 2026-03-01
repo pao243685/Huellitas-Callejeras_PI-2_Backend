@@ -94,14 +94,23 @@ export class AuthService {
       },
     });
 
+    console.log('Usuario encontrado:', user ? 'SÍ' : 'NO');
+    console.log('Email buscado:', loginDto.email);
+
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
+
+    console.log('Contraseña en BD:', user.contrasena);
+    console.log('Contraseña ingresada:', loginDto.contrasena);
 
     const isPasswordValid = await bcrypt.compare(
       loginDto.contrasena,
       user.contrasena,
     );
+
+    console.log('Contraseña válida:', isPasswordValid);
+    console.log('Usuario activo:', user.activo);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');
