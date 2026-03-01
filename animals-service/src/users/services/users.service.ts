@@ -17,13 +17,17 @@ export class UsersService {
 
     return this.prisma.usuario.findMany({
       where: { refugio_id: refugioId },
-      include: { refugio: true },
+      include: {
+        refugio: true,
+        rol: true,
+      },
     });
   }
 
   async findOne(id: string) {
     const user = await this.prisma.usuario.findUnique({
       where: { id_usuario: id },
+      include: { rol: true },
     });
 
     if (!user) {
@@ -36,7 +40,7 @@ export class UsersService {
   async create(dto: UsersDto) {
     await this.validation.validateRefugio(dto.refugio_id);
 
-    const hashedPassword = await bcrypt.hash(dto.contrasena, 10); // agregar
+    const hashedPassword = await bcrypt.hash(dto.contrasena, 10);
 
     const user = await this.prisma.usuario.create({
       data: {
@@ -44,7 +48,7 @@ export class UsersService {
         apellido_p: dto.apellido_p,
         apellido_m: dto.apellido_m,
         email: dto.email,
-        contrasena: hashedPassword, // cambiar dto.contrasena por hashedPassword
+        contrasena: hashedPassword,
         activo: dto.activo,
         rol_id: dto.rol_id,
         refugio_id: dto.refugio_id,
@@ -59,16 +63,20 @@ export class UsersService {
       where: { id_usuario: id },
     });
 
-    if (!existing) {
-      throw new NotFoundException(`Usuario ${id} no encontrado`);
+    if (!existing) throw new NotFoundException(`Usuario ${id} no encontrado`);
+
+    const data: UpdateUsersDto = { ...dto };
+
+    if (dto.contrasena) {
+      data.contrasena = await bcrypt.hash(dto.contrasena, 10);
+    } else {
+      delete data.contrasena;
     }
 
-    const usuario = await this.prisma.usuario.update({
+    return this.prisma.usuario.update({
       where: { id_usuario: id },
-      data: dto,
+      data,
     });
-
-    return usuario;
   }
 
   async delete(id: string) {

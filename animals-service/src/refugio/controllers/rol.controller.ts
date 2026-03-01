@@ -17,11 +17,13 @@ import { UpdateRolDto } from '../dto/update-rol.dto';
 export class RolController {
   constructor(private readonly rolService: RolService) {}
 
+  @Public()
   @Get('refugio/:refugio_id')
   async findByRefugio(@Param('refugio_id') refugioId: string) {
     return this.rolService.findByrefugio(refugioId);
   }
 
+  @Public()
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.rolService.findOne(id);

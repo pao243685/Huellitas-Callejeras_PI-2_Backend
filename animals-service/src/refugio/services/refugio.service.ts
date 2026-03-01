@@ -28,6 +28,14 @@ export class RefugioService {
       data: dto,
     });
 
+    await this.prisma.rol.createMany({
+      data: [
+        { nombre: 'propietario', refugio_id: refugio.id_refugio },
+        { nombre: 'admin', refugio_id: refugio.id_refugio },
+        { nombre: 'colaborador', refugio_id: refugio.id_refugio },
+      ],
+    });
+
     return refugio;
   }
 
