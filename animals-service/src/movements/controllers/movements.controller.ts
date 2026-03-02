@@ -9,6 +9,11 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 export class MovementsController {
   constructor(private readonly movementsService: MovementsService) {}
 
+  @Get()
+  @Roles('admin', 'propietario', 'colaborador')
+  async getAll() {
+    return this.movementsService.findAll();
+  }
 
   @Get('animal/:animal_id')
   @Roles('admin', 'propietario', 'colaborador')
