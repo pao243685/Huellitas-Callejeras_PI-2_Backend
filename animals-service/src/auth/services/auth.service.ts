@@ -3,6 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../shared/prisma/prisma.service';
@@ -19,6 +20,10 @@ export class AuthService {
   ) {}
 
   async register(registerDto: RegisterDto) {
+    if (!registerDto.acepta_terminos) {
+      throw new BadRequestException('Debes aceptar los términos y condiciones');
+    }
+
     const existingUser = await this.prisma.usuario.findFirst({
       where: { email: registerDto.email },
     });
@@ -43,11 +48,13 @@ export class AuthService {
       throw new UnauthorizedException('Refugio no encontrado');
     }
 
-    const hashedPassword = await bcrypt.hash(registerDto.contrasena, 10);
+    const { acepta_terminos, ...datosUsuario } = registerDto;
+
+    const hashedPassword = await bcrypt.hash(datosUsuario.contrasena, 10);
 
     const user = await this.prisma.usuario.create({
       data: {
-        ...registerDto,
+        ...datosUsuario,
         contrasena: hashedPassword,
       },
       select: {
@@ -94,23 +101,14 @@ export class AuthService {
       },
     });
 
-    console.log('Usuario encontrado:', user ? 'SÍ' : 'NO');
-    console.log('Email buscado:', loginDto.email);
-
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
-
-    console.log('Contraseña en BD:', user.contrasena);
-    console.log('Contraseña ingresada:', loginDto.contrasena);
 
     const isPasswordValid = await bcrypt.compare(
       loginDto.contrasena,
       user.contrasena,
     );
-
-    console.log('Contraseña válida:', isPasswordValid);
-    console.log('Usuario activo:', user.activo);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');

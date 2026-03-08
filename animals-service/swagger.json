@@ -1,0 +1,544 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Animals Service API",
+    "description": "Gestión de expedientes y movimientos",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "http://localhost:3001" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Autenticación"],
+        "summary": "Registrar nuevo usuario",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre":     { "type": "string", "example": "Juan" },
+                  "apellido_p": { "type": "string", "example": "Pérez" },
+                  "apellido_m": { "type": "string", "example": "García" },
+                  "email":      { "type": "string", "example": "juan@refugio.com" },
+                  "contrasena": { "type": "string", "example": "******" },
+                  "activo":     { "type": "boolean", "example": true },
+                  "rol_id":     { "type": "string", "format": "uuid" },
+                  "refugio_id": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Usuario registrado exitosamente" },
+          "409": { "description": "Email ya registrado" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Autenticación"],
+        "summary": "Iniciar sesión",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email":      { "type": "string", "example": "admin@refugio.com" },
+                  "contrasena": { "type": "string", "example": "********" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login exitoso, retorna access_token" },
+          "401": { "description": "Credenciales inválidas" }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": ["Autenticación"],
+        "summary": "Obtener perfil del usuario autenticado",
+        "responses": {
+          "200": { "description": "Perfil del usuario" },
+          "401": { "description": "No autenticado" }
+        }
+      }
+    },
+    "/refugios": {
+      "get": {
+        "tags": ["Refugios"],
+        "summary": "Obtener todos los refugios",
+        "responses": {
+          "200": { "description": "Lista de refugios" }
+        }
+      },
+      "post": {
+        "tags": ["Refugios"],
+        "summary": "Crear un refugio",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre":        { "type": "string", "example": "Refugio Esperanza" },
+                  "capacidad_max": { "type": "integer", "example": 50 },
+                  "estado":        { "type": "string", "example": "CDMX" },
+                  "municipio":     { "type": "string", "example": "Benito Juárez" },
+                  "colonia":       { "type": "string", "example": "Del Valle" },
+                  "calle":         { "type": "string", "example": "Av. Principal" },
+                  "num_exterior":  { "type": "integer", "example": 123 },
+                  "num_interior":  { "type": "integer", "example": 4 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Refugio creado" }
+        }
+      }
+    },
+    "/refugios/{id}": {
+      "get": {
+        "tags": ["Refugios"],
+        "summary": "Obtener un refugio por ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Refugio encontrado" },
+          "404": { "description": "Refugio no encontrado" }
+        }
+      },
+      "patch": {
+        "tags": ["Refugios"],
+        "summary": "Actualizar un refugio",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre":        { "type": "string" },
+                  "capacidad_max": { "type": "integer" },
+                  "estado":        { "type": "string" },
+                  "municipio":     { "type": "string" },
+                  "colonia":       { "type": "string" },
+                  "calle":         { "type": "string" },
+                  "num_exterior":  { "type": "integer" },
+                  "num_interior":  { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Refugio actualizado" },
+          "404": { "description": "Refugio no encontrado" }
+        }
+      },
+      "delete": {
+        "tags": ["Refugios"],
+        "summary": "Eliminar un refugio",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "204": { "description": "Refugio eliminado" },
+          "404": { "description": "Refugio no encontrado" }
+        }
+      }
+    },
+    "/animals": {
+      "post": {
+        "tags": ["Animales"],
+        "summary": "Crear un animal",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["nombre", "estado", "especie", "raza", "edad", "peso", "sexo", "tamano", "lugar", "descripcion", "refugio_id", "usuario_id"],
+                "properties": {
+                  "nombre":                 { "type": "string", "example": "Firulais" },
+                  "estado":                 { "type": "string", "enum": ["adoptado", "adopcion", "recuperacion", "defuncion", "extraviado"]},
+                  "especie":                { "type": "string", "example": "Perro" },
+                  "raza":                   { "type": "string", "example": "Labrador" },
+                  "edad":                   { "type": "integer", "example": 3 },
+                  "peso":                   { "type": "number", "example": 12.5 },
+                  "sexo":                   { "type": "string", "enum": ["Macho", "Hembra"] },
+                  "tamano":                 { "type": "string", "enum": ["miniatura", "pequeno", "mediano", "grande", "gigante"]},
+                  "enfermedad_no_tratable": { "type": "boolean", "example": false },
+                  "discapacidad":           { "type": "boolean", "example": false },
+                  "es_agresivo":            { "type": "boolean", "example": false },
+                  "lugar":                  { "type": "string", "example": "Jardín" },
+                  "descripcion":            { "type": "string", "example": "Animal tranquilo" },
+                  "refugio_id":             { "type": "string", "format": "uuid" },
+                  "usuario_id":             { "type": "string", "format": "uuid" },
+                  "imagen":                 { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Animal creado" }
+        }
+      }
+    },
+    "/animals/refugio/{refugio_id}": {
+      "get": {
+        "tags": ["Animales"],
+        "summary": "Obtener animales por refugio",
+        "parameters": [
+          { "name": "refugio_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Lista de animales" },
+          "404": { "description": "Refugio no encontrado" }
+        }
+      }
+    },
+    "/animals/{id}": {
+      "get": {
+        "tags": ["Animales"],
+        "summary": "Obtener un animal por ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Animal encontrado" },
+          "404": { "description": "Animal no encontrado" }
+        }
+      },
+      "patch": {
+        "tags": ["Animales"],
+        "summary": "Actualizar un animal",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre":                 { "type": "string" },
+                  "estado":                 { "type": "string", "enum": ["adoptado", "adopcion", "recuperacion", "defuncion", "extraviado"] },
+                  "especie":                { "type": "string" },
+                  "raza":                   { "type": "string" },
+                  "edad":                   { "type": "integer" },
+                  "peso":                   { "type": "number" },
+                  "sexo":                   { "type": "string", "enum": ["Macho", "Hembra"] },
+                  "tamano":                 { "type": "string", "enum": ["miniatura", "pequeno", "mediano", "grande", "gigante"] },
+                  "enfermedad_no_tratable": { "type": "boolean" },
+                  "discapacidad":           { "type": "boolean" },
+                  "es_agresivo":            { "type": "boolean" },
+                  "lugar":                  { "type": "string" },
+                  "descripcion":            { "type": "string" },
+                  "imagen":                 { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Animal actualizado" },
+          "404": { "description": "Animal no encontrado" }
+        }
+      },
+      "delete": {
+        "tags": ["Animales"],
+        "summary": "Eliminar un animal",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Animal eliminado" },
+          "404": { "description": "Animal no encontrado" }
+        }
+      }
+    },
+    "/movements": {
+      "get": {
+        "tags": ["Movimientos"],
+        "summary": "Obtener todos los movimientos",
+        "responses": {
+          "200": { "description": "Lista de movimientos" }
+        }
+      },
+      "post": {
+        "tags": ["Movimientos"],
+        "summary": "Crear un movimiento",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tipo_movimiento":  { "type": "string", "enum": ["entrada", "salida"] },
+                  "motivo":           { "type": "string", "enum": ["rescate", "retorno", "adopcion", "defuncion", "extravio"] },
+                  "fecha_movimiento": { "type": "string", "example": "2024-01-15" },
+                  "animal_id":        { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Movimiento creado" },
+          "400": { "description": "Motivo inválido para el tipo" }
+        }
+      }
+    },
+    "/movements/animal/{animal_id}": {
+      "get": {
+        "tags": ["Movimientos"],
+        "summary": "Obtener movimientos por animal",
+        "parameters": [
+          { "name": "animal_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Lista de movimientos del animal" },
+          "404": { "description": "Animal no encontrado" }
+        }
+      }
+    },
+    "/movements/{id}": {
+      "get": {
+        "tags": ["Movimientos"],
+        "summary": "Obtener un movimiento por ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Movimiento encontrado" },
+          "404": { "description": "Movimiento no encontrado" }
+        }
+      },
+      "delete": {
+        "tags": ["Movimientos"],
+        "summary": "Eliminar un movimiento",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "204": { "description": "Movimiento eliminado" },
+          "404": { "description": "Movimiento no encontrado" }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "tags": ["Usuarios"],
+        "summary": "Crear un usuario",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre":     { "type": "string", "example": "Juan" },
+                  "apellido_p": { "type": "string", "example": "Pérez" },
+                  "apellido_m": { "type": "string", "example": "García" },
+                  "email":      { "type": "string", "example": "juan@refugio.com" },
+                  "contrasena": { "type": "string", "example": "*******" },
+                  "activo":     { "type": "boolean", "example": true },
+                  "rol_id":     { "type": "string", "format": "uuid" },
+                  "refugio_id": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Usuario creado" }
+        }
+      }
+    },
+    "/users/refugio/{refugio_id}": {
+      "get": {
+        "tags": ["Usuarios"],
+        "summary": "Obtener usuarios por refugio",
+        "parameters": [
+          { "name": "refugio_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Lista de usuarios" },
+          "404": { "description": "Refugio no encontrado" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["Usuarios"],
+        "summary": "Obtener un usuario por ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Usuario encontrado" },
+          "404": { "description": "Usuario no encontrado" }
+        }
+      },
+      "patch": {
+        "tags": ["Usuarios"],
+        "summary": "Actualizar un usuario",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre":     { "type": "string" },
+                  "apellido_p": { "type": "string" },
+                  "apellido_m": { "type": "string" },
+                  "email":      { "type": "string" },
+                  "contrasena": { "type": "string" },
+                  "activo":     { "type": "boolean" },
+                  "rol_id":     { "type": "string", "format": "uuid" },
+                  "refugio_id": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Usuario actualizado" },
+          "404": { "description": "Usuario no encontrado" }
+        }
+      },
+      "delete": {
+        "tags": ["Usuarios"],
+        "summary": "Eliminar un usuario",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Usuario eliminado" },
+          "404": { "description": "Usuario no encontrado" }
+        }
+      }
+    },
+    "/roles/refugio/{refugio_id}": {
+      "get": {
+        "tags": ["Roles"],
+        "summary": "Obtener roles por refugio",
+        "parameters": [
+          { "name": "refugio_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Lista de roles" },
+          "404": { "description": "Refugio no encontrado" }
+        }
+      }
+    },
+    "/roles/{id}": {
+      "get": {
+        "tags": ["Roles"],
+        "summary": "Obtener un rol por ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Rol encontrado" },
+          "404": { "description": "Rol no encontrado" }
+        }
+      },
+      "patch": {
+        "tags": ["Roles"],
+        "summary": "Actualizar un rol",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre":     { "type": "string" },
+                  "refugio_id": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Rol actualizado" },
+          "404": { "description": "Rol no encontrado" }
+        }
+      },
+      "delete": {
+        "tags": ["Roles"],
+        "summary": "Eliminar un rol",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "204": { "description": "Rol eliminado" },
+          "404": { "description": "Rol no encontrado" }
+        }
+      }
+    },
+    "/roles": {
+      "post": {
+        "tags": ["Roles"],
+        "summary": "Crear un rol",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nombre":     { "type": "string", "example": "colaborador" },
+                  "refugio_id": { "type": "string", "format": "uuid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Rol creado" }
+        }
+      }
+    }
+  }
+}

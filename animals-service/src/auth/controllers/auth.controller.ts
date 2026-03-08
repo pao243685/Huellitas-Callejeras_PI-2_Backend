@@ -5,6 +5,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { AuthService } from '../services/auth.service';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
@@ -20,8 +21,13 @@ export class AuthController {
 
   @Public()
   @Post('register')
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Registrar nuevo usuario' })
   @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente' })
+  @ApiResponse({
+    status: 400,
+    description: 'Términos y condiciones no aceptados',
+  })
   @ApiResponse({ status: 409, description: 'Email ya registrado' })
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
@@ -29,14 +35,20 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Iniciar sesión' })
   @ApiResponse({ status: 200, description: 'Login exitoso' })
   @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
+  @ApiResponse({
+    status: 429,
+    description: 'Demasiados intentos, espera 1 minuto',
+  })
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
   @Get('me')
+  @SkipThrottle()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })

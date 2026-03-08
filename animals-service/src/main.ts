@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { SwaggerModule, OpenAPIObject } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import * as fs from 'fs';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -25,14 +26,11 @@ async function bootstrap() {
 
   app.enableCors();
 
-  const config = new DocumentBuilder()
-    .setTitle('Animals Service API')
-    .setDescription('Gestión de expedientes y movimientos')
-    .setVersion('1.0')
-    .build();
+  const swaggerDocument = JSON.parse(
+    fs.readFileSync(join(process.cwd(), 'swagger.json'), 'utf8'),
+  ) as OpenAPIObject;
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup('api/docs', app, swaggerDocument);
 
   const port = process.env.PORT || 3001;
   await app.listen(port);

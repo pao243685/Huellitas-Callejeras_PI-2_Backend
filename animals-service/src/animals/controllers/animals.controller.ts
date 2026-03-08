@@ -24,7 +24,6 @@ const storage = diskStorage({
     cb(null, `${unique}${extname(file.originalname)}`);
   },
 });
-
 @Controller('animals')
 export class AnimalsController {
   constructor(private readonly animalsService: AnimalsService) {}

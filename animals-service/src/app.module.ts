@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 import { SharedModule } from './shared/shared.module';
 import { AnimalsModule } from './animals/animals.module';
@@ -17,6 +18,12 @@ import { UserModule } from './users/users.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     SharedModule,
     AnimalsModule,
     MovementsModule,
@@ -24,7 +31,6 @@ import { UserModule } from './users/users.module';
     RefugioModule,
     UserModule,
   ],
-
   providers: [
     JwtAuthGuard,
     {
@@ -35,6 +41,10 @@ import { UserModule } from './users/users.module';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
