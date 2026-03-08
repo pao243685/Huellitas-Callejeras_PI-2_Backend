@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { AnimalsValidationService } from './animals.validation.service';
@@ -69,7 +68,7 @@ export class AnimalsService {
     if (!existing) {
       throw new NotFoundException(`Animal ${id} no encontrado`);
     }
-    
+
     if (dto.refugio_id) {
       await this.validation.validateRefugio(dto.refugio_id);
     }
