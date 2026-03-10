@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { UsersDto } from '../dto/users.dto';
 import { UpdateUsersDto } from '../dto/update-users.dto';
@@ -40,6 +44,14 @@ export class UsersService {
   async create(dto: UsersDto) {
     await this.validation.validateRefugio(dto.refugio_id);
 
+    const existingUser = await this.prisma.usuario.findFirst({
+      where: { email: dto.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('El email ya está registrado');
+    }
+
     const hashedPassword = await bcrypt.hash(dto.contrasena, 10);
 
     const user = await this.prisma.usuario.create({
@@ -64,6 +76,16 @@ export class UsersService {
     });
 
     if (!existing) throw new NotFoundException(`Usuario ${id} no encontrado`);
+
+    if (dto.email && dto.email !== existing.email) {
+      const emailInUse = await this.prisma.usuario.findFirst({
+        where: { email: dto.email },
+      });
+
+      if (emailInUse) {
+        throw new ConflictException('El email ya está registrado');
+      }
+    }
 
     const data: UpdateUsersDto = { ...dto };
 
