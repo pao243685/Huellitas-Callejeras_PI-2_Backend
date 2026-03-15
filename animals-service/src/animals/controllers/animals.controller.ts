@@ -16,6 +16,7 @@ import { AnimalsService } from '../services/animals.service';
 import { CreateAnimalDto } from '../dto/create-animal.dto';
 import { UpdateAnimalDto } from '../dto/update-animal.dto';
 import { Roles } from '../../auth/decorators/roles.decorator';
+import { Query } from '@nestjs/common';
 
 const storage = diskStorage({
   destination: './uploads/animals',
@@ -30,8 +31,12 @@ export class AnimalsController {
 
   @Get('refugio/:refugio_id')
   @Roles('admin', 'propietario', 'colaborador')
-  async findByRefugio(@Param('refugio_id') refugioId: string) {
-    return this.animalsService.findByRefugio(refugioId);
+  async findByRefugio(
+    @Param('refugio_id') refugioId: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    return this.animalsService.findByRefugio(refugioId, +page, +limit);
   }
 
   @Get(':id')

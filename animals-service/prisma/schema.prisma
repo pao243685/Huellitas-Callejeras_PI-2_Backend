@@ -88,7 +88,7 @@ model Usuario {
   apellido_p  String  @db.VarChar(100)
   apellido_m  String  @db.VarChar(100)
   contrasena  String  @db.VarChar(100)
-  email       String  @db.Text
+  email       String  @unique @db.Text
   activo      Boolean
   rol_id      String  @db.Uuid
   refugio_id  String  @db.Uuid

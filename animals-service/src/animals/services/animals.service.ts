@@ -11,13 +11,35 @@ export class AnimalsService {
     private readonly validation: AnimalsValidationService,
   ) {}
 
-  async findByRefugio(refugioId: string) {
+  async findByRefugio(refugioId: string, page = 1, limit = 10) {
     await this.validation.validateRefugio(refugioId);
 
-    return this.prisma.animal.findMany({
-      where: { refugio_id: refugioId },
-      include: { refugio: true },
-    });
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.animal.findMany({
+        where: { refugio_id: refugioId },
+        include: { refugio: true },
+        skip,
+        take: limit,
+        orderBy: { nombre: 'asc' },
+      }),
+      this.prisma.animal.count({
+        where: { refugio_id: refugioId },
+      }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page < Math.ceil(total / limit),
+        hasPrevPage: page > 1,
+      },
+    };
   }
 
   async findOne(id: string) {
