@@ -1,11 +1,12 @@
-import { IsOptional, IsDateString } from 'class-validator';
+import { IsDateString, IsEnum } from 'class-validator';
 
 export class HistorialDto {
-  @IsOptional()
   @IsDateString()
-  fecha_inicio?: string;
+  fecha_ini: string;
 
-  @IsOptional()
   @IsDateString()
-  fecha_fin?: string;
+  fecha_fin: string;
+
+  @IsEnum(['semana', 'mes'])
+  modo: 'semana' | 'mes';
 }
