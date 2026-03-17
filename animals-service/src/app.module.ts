@@ -11,6 +11,7 @@ import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { RefugioModule } from './refugio/refugio.module';
 import { UserModule } from './users/users.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UserModule } from './users/users.module';
     AuthModule,
     RefugioModule,
     UserModule,
+    StatisticsModule,
   ],
   providers: [
     JwtAuthGuard,
