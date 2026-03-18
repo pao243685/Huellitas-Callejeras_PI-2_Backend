@@ -74,6 +74,8 @@ model Refugio {
   calle        String  @db.Text
   num_exterior Int?
   num_interior Int?
+  createdAt    DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime? @updatedAt      @db.Timestamp(6)
 
   usuarios Usuario[]
   animales Animal[]
@@ -92,6 +94,8 @@ model Usuario {
   activo      Boolean
   rol_id      String  @db.Uuid
   refugio_id  String  @db.Uuid
+  createdAt   DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime? @updatedAt      @db.Timestamp(6)
 
   rol      Rol      @relation(fields: [rol_id], references: [id_roles], onDelete: Cascade)
   refugio  Refugio  @relation(fields: [refugio_id], references: [id_refugio], onDelete: Cascade)
@@ -118,6 +122,8 @@ model Animal {
   descripcion            String       @db.Text
   usuario_id             String       @db.Uuid
   refugio_id             String       @db.Uuid
+  createdAt              DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt              DateTime? @updatedAt      @db.Timestamp(6)
 
   refugio     Refugio      @relation(fields: [refugio_id], references: [id_refugio], onDelete: Restrict)
   movimientos Movimiento[]
@@ -131,6 +137,8 @@ model Movimiento {
   fecha_movimiento DateTime       @default(now()) @db.Timestamp(6)
   motivo           MovimientoMotivo        
   animal_id        String         @db.Uuid
+  createdAt        DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime? @updatedAt      @db.Timestamp(6)
 
   animal Animal @relation(fields: [animal_id], references: [id_animal], onDelete: Cascade)
 

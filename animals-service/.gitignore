@@ -6,5 +6,3 @@ dist/
 
 /generated/prisma
 
-prisma/migrations/*
-!prisma/migrations/.gitkeep
