@@ -14,5 +14,3 @@ ADD COLUMN "updatedAt" TIMESTAMP(6) DEFAULT NULL;
 ALTER TABLE "usuarios" ADD COLUMN "createdAt" TIMESTAMP(6) DEFAULT NULL,
 ADD COLUMN "updatedAt" TIMESTAMP(6) DEFAULT NULL;
 
--- CreateIndex
-CREATE UNIQUE INDEX "usuarios_email_key" ON "usuarios"("email");
