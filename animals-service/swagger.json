@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Animals Service API",
+    "title": "Huellitas Callejeras API",
     "description": "Gestión de expedientes y movimientos",
     "version": "1.0.0"
   },
@@ -323,6 +323,79 @@
         "responses": {
           "200": { "description": "Usuario eliminado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } },
           "404": { "description": "Usuario no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/statistics/indicadores/{refugio_id}": {
+      "get": {
+        "tags": ["Estadísticas"],
+        "summary": "Obtener indicadores de adopción por refugio",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "refugio_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Indicadores del refugio",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/IndicadoresResponse" }
+              }
+            }
+          },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/statistics/historial/{refugio_id}": {
+      "get": {
+        "tags": ["Estadísticas"],
+        "summary": "Obtener historial de movimientos para gráfica",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "refugio_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "fecha_ini",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date", "example": "2024-01-01" }
+          },
+          {
+            "name": "fecha_fin",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "date", "example": "2024-03-31" }
+          },
+          {
+            "name": "modo",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "enum": ["semana", "mes"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historial de movimientos agrupados por periodo",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HistorialResponse" }
+              }
+            }
+          },
+          "400": { "description": "Parámetros inválidos (fechas o modo)", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
     }
