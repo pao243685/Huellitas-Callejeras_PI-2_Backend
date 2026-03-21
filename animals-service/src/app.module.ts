@@ -12,6 +12,7 @@ import { RolesGuard } from './auth/guards/roles.guard';
 import { RefugioModule } from './refugio/refugio.module';
 import { UserModule } from './users/users.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { EtiquetasModule } from './etiquetas/etiquetas.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { StatisticsModule } from './statistics/statistics.module';
     RefugioModule,
     UserModule,
     StatisticsModule,
+    EtiquetasModule,
   ],
   providers: [
     JwtAuthGuard,
