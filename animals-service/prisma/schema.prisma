@@ -9,7 +9,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 enum TamanoLista {
   miniatura
   pequeno  @map("pequeño")
@@ -52,54 +51,53 @@ enum EstadoAnimal {
   extraviado
 }
 
-
 model Rol {
-  id_roles String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  nombre   String @db.VarChar(100)
+  id_roles   String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre     String  @db.VarChar(100)
   refugio_id String  @db.Uuid
 
   usuarios Usuario[]
-  refugio     Refugio      @relation(fields: [refugio_id], references: [id_refugio], onDelete: Restrict)
+  refugio  Refugio @relation(fields: [refugio_id], references: [id_refugio], onDelete: Restrict)
+
   @@map("roles")
 }
 
-
 model Refugio {
-  id_refugio   String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  nombre       String  @db.VarChar(100)
+  id_refugio    String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre        String  @db.VarChar(100)
   capacidad_max Int
-  estado       String  @db.VarChar(100)
-  municipio    String  @db.VarChar(100)
-  colonia      String  @db.Text
-  calle        String  @db.Text
-  num_exterior Int?
-  num_interior Int?
-  createdAt    DateTime? @default(now()) @db.Timestamp(6)
-  updatedAt    DateTime? @updatedAt      @db.Timestamp(6)
+  estado        String  @db.VarChar(100)
+  municipio     String  @db.VarChar(100)
+  colonia       String  @db.Text
+  calle         String  @db.Text
+  num_exterior  Int?
+  num_interior  Int?
+  createdAt     DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime? @updatedAt @db.Timestamp(6)
 
   usuarios Usuario[]
   animales Animal[]
-  roles Rol[]
+  roles    Rol[]
 
   @@map("refugios")
 }
 
 model Usuario {
-  id_usuario  String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  nombre      String  @db.VarChar(100)
-  apellido_p  String  @db.VarChar(100)
-  apellido_m  String  @db.VarChar(100)
-  contrasena  String  @db.VarChar(100)
-  email       String  @unique @db.Text
-  activo      Boolean
-  rol_id      String  @db.Uuid
-  refugio_id  String  @db.Uuid
-  createdAt   DateTime? @default(now()) @db.Timestamp(6)
-  updatedAt   DateTime? @updatedAt      @db.Timestamp(6)
+  id_usuario     String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre         String   @db.VarChar(100)
+  apellido_p     String   @db.VarChar(100)
+  apellido_m     String   @db.VarChar(100)
+  contrasena     String   @db.VarChar(100)
+  email          String   @unique @db.Text
+  activo         Boolean
+  aceptacion_term Boolean
+  rol_id         String   @db.Uuid
+  refugio_id     String   @db.Uuid
+  createdAt      DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt      DateTime? @updatedAt @db.Timestamp(6)
 
-  rol      Rol      @relation(fields: [rol_id], references: [id_roles], onDelete: Cascade)
-  refugio  Refugio  @relation(fields: [refugio_id], references: [id_refugio], onDelete: Cascade)
-  
+  rol     Rol     @relation(fields: [rol_id], references: [id_roles], onDelete: Cascade)
+  refugio Refugio @relation(fields: [refugio_id], references: [id_refugio], onDelete: Cascade)
 
   @@map("usuarios")
 }
@@ -113,7 +111,6 @@ model Animal {
   edad                   Int
   peso                   Decimal      @db.Decimal(10, 2)
   sexo                   SexoAnimal
-  imagen                 String?      @db.Text
   tamano                 TamanoLista
   enfermedad_no_tratable Boolean
   discapacidad           Boolean
@@ -122,25 +119,59 @@ model Animal {
   descripcion            String       @db.Text
   usuario_id             String       @db.Uuid
   refugio_id             String       @db.Uuid
-  createdAt              DateTime? @default(now()) @db.Timestamp(6)
-  updatedAt              DateTime? @updatedAt      @db.Timestamp(6)
+  createdAt              DateTime?    @default(now()) @db.Timestamp(6)
+  updatedAt              DateTime?    @updatedAt @db.Timestamp(6)
 
   refugio     Refugio      @relation(fields: [refugio_id], references: [id_refugio], onDelete: Restrict)
   movimientos Movimiento[]
+  imagenes    AnimalImagen[]
+  etiquetas   EtiquetaAnimal[]
 
   @@map("animales")
 }
 
 model Movimiento {
-  id_movimiento    String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_movimiento    String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   tipo_movimiento  MovimientoTipo
-  fecha_movimiento DateTime       @default(now()) @db.Timestamp(6)
-  motivo           MovimientoMotivo        
-  animal_id        String         @db.Uuid
-  createdAt        DateTime? @default(now()) @db.Timestamp(6)
-  updatedAt        DateTime? @updatedAt      @db.Timestamp(6)
+  fecha_movimiento DateTime         @default(now()) @db.Timestamp(6)
+  motivo           MovimientoMotivo
+  animal_id        String           @db.Uuid
+  createdAt        DateTime?        @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime?        @updatedAt @db.Timestamp(6)
 
   animal Animal @relation(fields: [animal_id], references: [id_animal], onDelete: Cascade)
 
   @@map("movimientos")
+}
+
+model AnimalImagen {
+  id_animal_imagen String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  imagen           String @db.Text
+  animal_id        String @db.Uuid
+
+  animal Animal @relation(fields: [animal_id], references: [id_animal], onDelete: Cascade)
+
+  @@map("animal_imagen")
+}
+
+model Etiqueta {
+  id_etiqueta String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre      String   @db.VarChar(100)
+  createdAt   DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime? @updatedAt @db.Timestamp(6)
+
+  animales EtiquetaAnimal[]
+
+  @@map("etiquetas")
+}
+
+model EtiquetaAnimal {
+  animal_id   String @db.Uuid
+  etiqueta_id String @db.Uuid
+
+  animal   Animal   @relation(fields: [animal_id], references: [id_animal], onDelete: Cascade)
+  etiqueta Etiqueta @relation(fields: [etiqueta_id], references: [id_etiqueta], onDelete: Cascade)
+
+  @@id([animal_id, etiqueta_id])
+  @@map("etiqueta_animal")
 }
