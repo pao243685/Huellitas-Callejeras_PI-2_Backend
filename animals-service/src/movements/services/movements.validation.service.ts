@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { MovimientoTipo, MovimientoMotivo } from '@prisma/client';
@@ -14,12 +15,32 @@ export class MovementsValidationService {
     const animal = await this.prisma.animal.findUnique({
       where: { id_animal: animalId },
     });
-
     if (!animal) {
       throw new NotFoundException(`Animal ${animalId} no existe`);
     }
-
     return animal;
+  }
+
+  async validateAnimalPertenece(animalId: string, refugioId: string) {
+    const animal = await this.validateAnimal(animalId);
+    if (animal.refugio_id !== refugioId) {
+      throw new ForbiddenException('Ese animal no pertenece a tu refugio');
+    }
+    return animal;
+  }
+
+  async validateMovimientoPertenece(movimientoId: string, refugioId: string) {
+    const movimiento = await this.prisma.movimiento.findUnique({
+      where: { id_movimiento: movimientoId },
+      include: { animal: true },
+    });
+    if (!movimiento) {
+      throw new NotFoundException(`Movimiento ${movimientoId} no encontrado`);
+    }
+    if (movimiento.animal.refugio_id !== refugioId) {
+      throw new ForbiddenException('Ese movimiento no pertenece a tu refugio');
+    }
+    return movimiento;
   }
 
   validateMotivoByTipo(tipo: MovimientoTipo, motivo: MovimientoMotivo) {
@@ -31,17 +52,16 @@ export class MovementsValidationService {
       MovimientoMotivo.adopcion,
       MovimientoMotivo.defuncion,
       MovimientoMotivo.extravio,
-    ] as const;
+    ];
 
     if (tipo === MovimientoTipo.entrada && !motivosEntrada.includes(motivo)) {
       throw new BadRequestException(
-        `Para tipo "entrada" el motivo debe ser: rescate o retorno`,
+        'Para tipo "entrada" el motivo debe ser: rescate o retorno',
       );
     }
-
     if (tipo === MovimientoTipo.salida && !motivosSalida.includes(motivo)) {
       throw new BadRequestException(
-        `Para tipo "salida" el motivo debe ser: adopcion, defuncion o extravio`,
+        'Para tipo "salida" el motivo debe ser: adopcion, defuncion o extravio',
       );
     }
   }

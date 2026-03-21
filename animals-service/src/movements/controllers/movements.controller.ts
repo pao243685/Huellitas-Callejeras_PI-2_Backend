@@ -1,9 +1,17 @@
-/* eslint-disable */
-import { Controller, Get, Post, Patch, Delete, Param, Body, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Param,
+  Body,
+  HttpCode,
+} from '@nestjs/common';
 import { MovementsService } from '../services/movements.service';
 import { CreateMovementDto } from '../dto/create-movement.dto';
-import { UpdateMovementDto } from '../dto/update-movement.dto';
 import { Roles } from '../../auth/decorators/roles.decorator';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import type { UserResponse } from '../../auth/interfaces/jwt.interfaces';
 
 @Controller('movements')
 export class MovementsController {
@@ -11,32 +19,41 @@ export class MovementsController {
 
   @Get()
   @Roles('admin', 'propietario', 'colaborador')
-  async getAll() {
-    return this.movementsService.findAll();
+  async getAll(@CurrentUser() user: UserResponse) {
+    return this.movementsService.findAll(user.refugio.id_refugio);
   }
 
   @Get('animal/:animal_id')
   @Roles('admin', 'propietario', 'colaborador')
-  async findByAnimal(@Param('animal_id') animalId: string) {
-    return this.movementsService.findByAnimal(animalId);
+  async findByAnimal(
+    @Param('animal_id') animalId: string,
+    @CurrentUser() user: UserResponse,
+  ) {
+    return this.movementsService.findByAnimal(
+      animalId,
+      user.refugio.id_refugio,
+    );
   }
 
   @Get(':id')
   @Roles('admin', 'propietario', 'colaborador')
-  async findOne(@Param('id') id: string) {
-    return this.movementsService.findOne(id);
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserResponse) {
+    return this.movementsService.findOne(id, user.refugio.id_refugio);
   }
 
   @Post()
   @Roles('admin', 'propietario')
-  async create(@Body() dto: CreateMovementDto) {
-    return this.movementsService.create(dto);
+  async create(
+    @Body() dto: CreateMovementDto,
+    @CurrentUser() user: UserResponse,
+  ) {
+    return this.movementsService.create(dto, user.refugio.id_refugio);
   }
 
   @Delete(':id')
   @Roles('admin', 'propietario')
   @HttpCode(204)
-  async delete(@Param('id') id: string) {
-    await this.movementsService.delete(id);
+  async delete(@Param('id') id: string, @CurrentUser() user: UserResponse) {
+    await this.movementsService.delete(id, user.refugio.id_refugio);
   }
 }

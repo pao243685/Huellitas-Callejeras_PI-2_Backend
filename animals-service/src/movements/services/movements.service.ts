@@ -1,9 +1,7 @@
-/* eslint-disable */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { MovementsValidationService } from './movements.validation.service';
 import { CreateMovementDto } from '../dto/create-movement.dto';
-import { UpdateMovementDto } from '../dto/update-movement.dto';
 
 @Injectable()
 export class MovementsService {
@@ -12,28 +10,20 @@ export class MovementsService {
     private readonly validation: MovementsValidationService,
   ) {}
 
-  async findAll() {
+  async findAll(refugioId: string) {
     return this.prisma.movimiento.findMany({
+      where: { animal: { refugio_id: refugioId } },
       include: { animal: true },
       orderBy: { fecha_movimiento: 'desc' },
     });
   }
 
-  async findOne(id: string) {
-    const movimiento = await this.prisma.movimiento.findUnique({
-      where: { id_movimiento: id },
-      include: { animal: true },
-    });
-
-    if (!movimiento) {
-      throw new NotFoundException(`Movimiento ${id} no encontrado`);
-    }
-
-    return movimiento;
+  async findOne(id: string, refugioId: string) {
+    return this.validation.validateMovimientoPertenece(id, refugioId);
   }
 
-  async findByAnimal(animalId: string) {
-    await this.validation.validateAnimal(animalId);
+  async findByAnimal(animalId: string, refugioId: string) {
+    await this.validation.validateAnimalPertenece(animalId, refugioId);
 
     return this.prisma.movimiento.findMany({
       where: { animal_id: animalId },
@@ -42,8 +32,8 @@ export class MovementsService {
     });
   }
 
-  async create(dto: CreateMovementDto) {
-    await this.validation.validateAnimal(dto.animal_id);
+  async create(dto: CreateMovementDto, refugioId: string) {
+    await this.validation.validateAnimalPertenece(dto.animal_id, refugioId);
     this.validation.validateMotivoByTipo(dto.tipo_movimiento, dto.motivo);
 
     return this.prisma.movimiento.create({
@@ -59,44 +49,9 @@ export class MovementsService {
     });
   }
 
-  async update(id: string, dto: UpdateMovementDto) {
-    const existing = await this.prisma.movimiento.findUnique({
-      where: { id_movimiento: id },
-    });
-
-    if (!existing) {
-      throw new NotFoundException(`Movimiento ${id} no encontrado`);
-    }
-
-    const tipoFinal = dto.tipo_movimiento ?? existing.tipo_movimiento;
-    const motivoFinal = dto.motivo ?? existing.motivo;
-
-    this.validation.validateMotivoByTipo(tipoFinal, motivoFinal);
-
-    return this.prisma.movimiento.update({
-      where: { id_movimiento: id },
-      data: {
-        ...(dto.tipo_movimiento && { tipo_movimiento: dto.tipo_movimiento }),
-        ...(dto.motivo && { motivo: dto.motivo }),
-        ...(dto.fecha_movimiento && {
-          fecha_movimiento: new Date(dto.fecha_movimiento),
-        }),
-      },
-      include: { animal: true },
-    });
-  }
-
-  async delete(id: string) {
-    const movimiento = await this.prisma.movimiento.findUnique({
-      where: { id_movimiento: id },
-    });
-
-    if (!movimiento) {
-      throw new NotFoundException(`Movimiento ${id} no encontrado`);
-    }
-
+  async delete(id: string, refugioId: string) {
+    await this.validation.validateMovimientoPertenece(id, refugioId);
     await this.prisma.movimiento.delete({ where: { id_movimiento: id } });
-
     return { message: 'Movimiento eliminado', id };
   }
 }

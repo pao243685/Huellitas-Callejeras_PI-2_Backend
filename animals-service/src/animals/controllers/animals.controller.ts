@@ -8,6 +8,7 @@ import {
   Body,
   UploadedFile,
   UseInterceptors,
+  UseGuards,
   Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -17,6 +18,9 @@ import { AnimalsService } from '../services/animals.service';
 import { CreateAnimalDto } from '../dto/create-animal.dto';
 import { UpdateAnimalDto } from '../dto/update-animal.dto';
 import { Roles } from '../../auth/decorators/roles.decorator';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { RefugioOwnershipGuard } from '../../auth/guards/refugio-asociado.guard';
+import type { UserResponse } from '../../auth/interfaces/jwt.interfaces';
 
 const storage = diskStorage({
   destination: './uploads/animals',
@@ -32,6 +36,7 @@ export class AnimalsController {
 
   @Get('refugio/:refugio_id')
   @Roles('admin', 'propietario', 'colaborador')
+  @UseGuards(RefugioOwnershipGuard)
   async findByRefugio(
     @Param('refugio_id') refugioId: string,
     @Query('page') page = '1',
@@ -42,8 +47,8 @@ export class AnimalsController {
 
   @Get(':id')
   @Roles('admin', 'propietario', 'colaborador')
-  async findOne(@Param('id') id: string) {
-    return this.animalsService.findOne(id);
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserResponse) {
+    return this.animalsService.findOne(id, user.refugio.id_refugio);
   }
 
   @Post()
@@ -65,23 +70,27 @@ export class AnimalsController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateAnimalDto,
+    @CurrentUser() user: UserResponse,
     @UploadedFile() file?: Express.Multer.File,
   ) {
     if (file) {
       dto.imagen = `uploads/animals/${file.filename}`;
     }
-    return this.animalsService.update(id, dto);
+    return this.animalsService.update(id, dto, user.refugio.id_refugio);
   }
 
   @Delete('imagen/:imagenId')
   @Roles('admin', 'propietario')
-  async deleteImagen(@Param('imagenId') imagenId: string) {
-    return this.animalsService.deleteImagen(imagenId);
+  async deleteImagen(
+    @Param('imagenId') imagenId: string,
+    @CurrentUser() user: UserResponse,
+  ) {
+    return this.animalsService.deleteImagen(imagenId, user.refugio.id_refugio);
   }
 
   @Delete(':id')
   @Roles('admin', 'propietario')
-  async delete(@Param('id') id: string) {
-    return this.animalsService.delete(id);
+  async delete(@Param('id') id: string, @CurrentUser() user: UserResponse) {
+    return this.animalsService.delete(id, user.refugio.id_refugio);
   }
 }

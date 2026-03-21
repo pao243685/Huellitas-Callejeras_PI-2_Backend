@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { AnimalsValidationService } from './animals.validation.service';
 import { CreateAnimalDto } from '../dto/create-animal.dto';
@@ -22,9 +26,7 @@ export class AnimalsService {
         include: {
           refugio: true,
           imagenes: true,
-          etiquetas: {
-            include: { etiqueta: true },
-          },
+          etiquetas: { include: { etiqueta: true } },
         },
         skip,
         take: limit,
@@ -48,29 +50,22 @@ export class AnimalsService {
     };
   }
 
-  async findOne(id: string) {
-    const animal = await this.prisma.animal.findUnique({
+  async findOne(id: string, refugioId: string) {
+    await this.validation.validateAnimalPertenece(id, refugioId);
+    return this.prisma.animal.findUnique({
       where: { id_animal: id },
       include: {
         imagenes: true,
-        etiquetas: {
-          include: { etiqueta: true },
-        },
+        etiquetas: { include: { etiqueta: true } },
       },
     });
-
-    if (!animal) {
-      throw new NotFoundException(`Animal ${id} no encontrado`);
-    }
-
-    return animal;
   }
 
   async create(dto: CreateAnimalDto) {
     await this.validation.validateRefugio(dto.refugio_id);
     await this.validation.validateUsuario(dto.usuario_id);
 
-    const animal = await this.prisma.animal.create({
+    return this.prisma.animal.create({
       data: {
         nombre: dto.nombre,
         estado: dto.estado,
@@ -88,35 +83,22 @@ export class AnimalsService {
         refugio_id: dto.refugio_id,
         usuario_id: dto.usuario_id,
         ...(dto.imagen && {
-          imagenes: {
-            create: { imagen: dto.imagen },
-          },
+          imagenes: { create: { imagen: dto.imagen } },
         }),
       },
       include: {
         imagenes: true,
-        etiquetas: {
-          include: { etiqueta: true },
-        },
+        etiquetas: { include: { etiqueta: true } },
       },
     });
-
-    return animal;
   }
 
-  async update(id: string, dto: UpdateAnimalDto) {
-    const existing = await this.prisma.animal.findUnique({
-      where: { id_animal: id },
-    });
-
-    if (!existing) {
-      throw new NotFoundException(`Animal ${id} no encontrado`);
-    }
+  async update(id: string, dto: UpdateAnimalDto, refugioId: string) {
+    await this.validation.validateAnimalPertenece(id, refugioId);
 
     if (dto.refugio_id) {
       await this.validation.validateRefugio(dto.refugio_id);
     }
-
     if (dto.usuario_id) {
       await this.validation.validateUsuario(dto.usuario_id);
     }
@@ -128,20 +110,14 @@ export class AnimalsService {
       data: dataSinImagen,
       include: {
         imagenes: true,
-        etiquetas: {
-          include: { etiqueta: true },
-        },
+        etiquetas: { include: { etiqueta: true } },
       },
     });
 
     if (imagen) {
       await this.prisma.animalImagen.create({
-        data: {
-          imagen,
-          animal_id: id,
-        },
+        data: { imagen, animal_id: id },
       });
-
       return this.prisma.animal.findUnique({
         where: { id_animal: id },
         include: {
@@ -154,33 +130,26 @@ export class AnimalsService {
     return animal;
   }
 
-  async deleteImagen(imagenId: string) {
+  async deleteImagen(imagenId: string, refugioId: string) {
     const img = await this.prisma.animalImagen.findUnique({
       where: { id_animal_imagen: imagenId },
+      include: { animal: true },
     });
-
     if (!img) {
       throw new NotFoundException(`Imagen ${imagenId} no encontrada`);
     }
-
+    if (img.animal.refugio_id !== refugioId) {
+      throw new ForbiddenException('Esta imagen no pertenece a tu refugio');
+    }
     await this.prisma.animalImagen.delete({
       where: { id_animal_imagen: imagenId },
     });
-
     return { message: 'Imagen eliminada', id: imagenId };
   }
 
-  async delete(id: string) {
-    const animal = await this.prisma.animal.findUnique({
-      where: { id_animal: id },
-    });
-
-    if (!animal) {
-      throw new NotFoundException(`Animal ${id} no encontrado`);
-    }
-
+  async delete(id: string, refugioId: string) {
+    await this.validation.validateAnimalPertenece(id, refugioId);
     await this.prisma.animal.delete({ where: { id_animal: id } });
-
     return { message: 'Animal eliminado', id };
   }
 }
