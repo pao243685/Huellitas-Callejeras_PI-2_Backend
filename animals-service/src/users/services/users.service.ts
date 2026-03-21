@@ -62,6 +62,7 @@ export class UsersService {
         email: dto.email,
         contrasena: hashedPassword,
         activo: dto.activo,
+        aceptacion_term: dto.aceptacion_term ?? false,
         rol_id: dto.rol_id,
         refugio_id: dto.refugio_id,
       },

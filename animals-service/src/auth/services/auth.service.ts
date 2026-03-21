@@ -1,4 +1,6 @@
+/* eslint-disable*/
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Injectable,
   UnauthorizedException,
@@ -48,34 +50,25 @@ export class AuthService {
       throw new UnauthorizedException('Refugio no encontrado');
     }
 
-    const { acepta_terminos, ...datosUsuario } = registerDto;
+    const { acepta_terminos } = registerDto;
 
-    const hashedPassword = await bcrypt.hash(datosUsuario.contrasena, 10);
+    const hashedPassword = await bcrypt.hash(registerDto.contrasena, 10);
 
     const user = await this.prisma.usuario.create({
       data: {
-        ...datosUsuario,
+        nombre: registerDto.nombre,
+        apellido_p: registerDto.apellido_p,
+        apellido_m: registerDto.apellido_m,
+        email: registerDto.email,
         contrasena: hashedPassword,
+        activo: registerDto.activo,
+        rol_id: registerDto.rol_id,
+        refugio_id: registerDto.refugio_id,
+        aceptacion_term: acepta_terminos,
       },
-      select: {
-        id_usuario: true,
-        nombre: true,
-        apellido_p: true,
-        apellido_m: true,
-        email: true,
-        activo: true,
-        rol: {
-          select: {
-            id_roles: true,
-            nombre: true,
-          },
-        },
-        refugio: {
-          select: {
-            id_refugio: true,
-            nombre: true,
-          },
-        },
+      include: {
+        rol: true,
+        refugio: true,
       },
     });
 
@@ -86,8 +79,10 @@ export class AuthService {
       refugio: user.refugio,
     });
 
+    const { contrasena, ...userWithoutPassword } = user;
+
     return {
-      user,
+      user: userWithoutPassword,
       access_token: token,
     };
   }

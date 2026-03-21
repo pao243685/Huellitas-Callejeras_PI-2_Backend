@@ -67,7 +67,6 @@ export class AnimalsService {
         edad: dto.edad,
         peso: dto.peso,
         sexo: dto.sexo,
-        imagen: dto.imagen,
         tamano: dto.tamano,
         enfermedad_no_tratable: dto.enfermedad_no_tratable,
         discapacidad: dto.discapacidad,
@@ -76,6 +75,11 @@ export class AnimalsService {
         descripcion: dto.descripcion,
         refugio_id: dto.refugio_id,
         usuario_id: dto.usuario_id,
+        ...(dto.imagen && {
+          imagenes: {
+            create: { imagen: dto.imagen },
+          },
+        }),
       },
     });
 
