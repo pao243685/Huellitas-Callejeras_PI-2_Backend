@@ -8,6 +8,7 @@ import {
   Body,
   UploadedFile,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -16,7 +17,6 @@ import { AnimalsService } from '../services/animals.service';
 import { CreateAnimalDto } from '../dto/create-animal.dto';
 import { UpdateAnimalDto } from '../dto/update-animal.dto';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { Query } from '@nestjs/common';
 
 const storage = diskStorage({
   destination: './uploads/animals',
@@ -25,6 +25,7 @@ const storage = diskStorage({
     cb(null, `${unique}${extname(file.originalname)}`);
   },
 });
+
 @Controller('animals')
 export class AnimalsController {
   constructor(private readonly animalsService: AnimalsService) {}
@@ -70,6 +71,12 @@ export class AnimalsController {
       dto.imagen = `uploads/animals/${file.filename}`;
     }
     return this.animalsService.update(id, dto);
+  }
+
+  @Delete('imagen/:imagenId')
+  @Roles('admin', 'propietario')
+  async deleteImagen(@Param('imagenId') imagenId: string) {
+    return this.animalsService.deleteImagen(imagenId);
   }
 
   @Delete(':id')

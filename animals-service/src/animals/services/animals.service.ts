@@ -19,7 +19,13 @@ export class AnimalsService {
     const [data, total] = await this.prisma.$transaction([
       this.prisma.animal.findMany({
         where: { refugio_id: refugioId },
-        include: { refugio: true },
+        include: {
+          refugio: true,
+          imagenes: true,
+          etiquetas: {
+            include: { etiqueta: true },
+          },
+        },
         skip,
         take: limit,
         orderBy: { nombre: 'asc' },
@@ -45,6 +51,12 @@ export class AnimalsService {
   async findOne(id: string) {
     const animal = await this.prisma.animal.findUnique({
       where: { id_animal: id },
+      include: {
+        imagenes: true,
+        etiquetas: {
+          include: { etiqueta: true },
+        },
+      },
     });
 
     if (!animal) {
@@ -81,6 +93,12 @@ export class AnimalsService {
           },
         }),
       },
+      include: {
+        imagenes: true,
+        etiquetas: {
+          include: { etiqueta: true },
+        },
+      },
     });
 
     return animal;
@@ -103,12 +121,53 @@ export class AnimalsService {
       await this.validation.validateUsuario(dto.usuario_id);
     }
 
+    const { imagen, ...dataSinImagen } = dto;
+
     const animal = await this.prisma.animal.update({
       where: { id_animal: id },
-      data: dto,
+      data: dataSinImagen,
+      include: {
+        imagenes: true,
+        etiquetas: {
+          include: { etiqueta: true },
+        },
+      },
     });
 
+    if (imagen) {
+      await this.prisma.animalImagen.create({
+        data: {
+          imagen,
+          animal_id: id,
+        },
+      });
+
+      return this.prisma.animal.findUnique({
+        where: { id_animal: id },
+        include: {
+          imagenes: true,
+          etiquetas: { include: { etiqueta: true } },
+        },
+      });
+    }
+
     return animal;
+  }
+
+  async deleteImagen(imagenId: string) {
+    const img = await this.prisma.animalImagen.findUnique({
+      where: { id_animal_imagen: imagenId },
+    });
+
+    if (!img) {
+      throw new NotFoundException(`Imagen ${imagenId} no encontrada`);
+    }
+
+    await this.prisma.animalImagen.delete({
+      where: { id_animal_imagen: imagenId },
+    });
+
+    return { message: 'Imagen eliminada', id: imagenId };
   }
 
   async delete(id: string) {
