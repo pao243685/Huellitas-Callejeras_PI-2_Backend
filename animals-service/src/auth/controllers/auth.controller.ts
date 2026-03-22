@@ -22,8 +22,11 @@ export class AuthController {
   @Public()
   @Post('register')
   @Throttle({ default: { ttl: 60000, limit: 5 } })
-  @ApiOperation({ summary: 'Registrar nuevo usuario' })
-  @ApiResponse({ status: 201, description: 'Usuario registrado exitosamente' })
+  @ApiOperation({ summary: 'Registrar nuevo refugio con usuario propietario' })
+  @ApiResponse({
+    status: 201,
+    description: 'Refugio y propietario creados exitosamente',
+  })
   @ApiResponse({
     status: 400,
     description: 'Términos y condiciones no aceptados',

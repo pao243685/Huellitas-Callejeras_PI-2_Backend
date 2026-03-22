@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Injectable,
   UnauthorizedException,
@@ -19,70 +18,72 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
-    if (!registerDto.acepta_terminos) {
+  async register(dto: RegisterDto) {
+    if (!dto.acepta_terminos) {
       throw new BadRequestException('Debes aceptar los términos y condiciones');
     }
 
-    const existingUser = await this.prisma.usuario.findFirst({
-      where: { email: registerDto.email },
-    });
+    const hashedPassword = await bcrypt.hash(dto.contrasena, 10);
 
-    if (existingUser) {
-      throw new ConflictException('El email ya está registrado');
+    try {
+      await this.prisma.$executeRaw`
+        CALL sp_crear_refugio_completo(
+          ${dto.nombre}::varchar,
+          ${dto.capacidad_max}::integer,
+          ${dto.estado}::varchar,
+          ${dto.municipio}::varchar,
+          ${dto.colonia}::text,
+          ${dto.calle}::text,
+          ${dto.nombre_usuario}::varchar,
+          ${dto.apellido_p}::varchar,
+          ${dto.apellido_m}::varchar,
+          ${dto.email}::text,
+          ${hashedPassword}::text,
+          NULL::uuid,
+          NULL::uuid,
+          NULL::uuid,
+          ${dto.num_exterior ?? null}::integer,
+          ${dto.num_interior ?? null}::integer
+        )
+      `;
+
+      const usuario = await this.prisma.usuario.findUnique({
+        where: { email: dto.email.toLowerCase().trim() },
+        include: { rol: true, refugio: true },
+      });
+
+      if (!usuario) {
+        throw new BadRequestException(
+          'Error al crear el refugio, intenta de nuevo',
+        );
+      }
+
+      await this.prisma.rol.createMany({
+        data: [
+          { nombre: 'admin', refugio_id: usuario.refugio_id },
+          { nombre: 'colaborador', refugio_id: usuario.refugio_id },
+        ],
+      });
+
+      const token = this.generateToken({
+        id_usuario: usuario.id_usuario,
+        email: usuario.email,
+        rol: usuario.rol,
+        refugio: usuario.refugio,
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { contrasena: _, ...usuarioSinPassword } = usuario;
+
+      return { user: usuarioSinPassword, access_token: token };
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        error.message.includes('ya esta registrado')
+      ) {
+        throw new ConflictException('El email ya está registrado');
+      }
+      throw error;
     }
-
-    const rol = await this.prisma.rol.findUnique({
-      where: { id_roles: registerDto.rol_id },
-    });
-
-    if (!rol) {
-      throw new UnauthorizedException('Rol no encontrado');
-    }
-
-    const refugio = await this.prisma.refugio.findUnique({
-      where: { id_refugio: registerDto.refugio_id },
-    });
-
-    if (!refugio) {
-      throw new UnauthorizedException('Refugio no encontrado');
-    }
-
-    const { acepta_terminos } = registerDto;
-
-    const hashedPassword = await bcrypt.hash(registerDto.contrasena, 10);
-
-    const user = await this.prisma.usuario.create({
-      data: {
-        nombre: registerDto.nombre,
-        apellido_p: registerDto.apellido_p,
-        apellido_m: registerDto.apellido_m,
-        email: registerDto.email,
-        contrasena: hashedPassword,
-        activo: registerDto.activo,
-        rol_id: registerDto.rol_id,
-        refugio_id: registerDto.refugio_id,
-        aceptacion_term: acepta_terminos,
-      },
-      include: {
-        rol: true,
-        refugio: true,
-      },
-    });
-
-    const token = this.generateToken({
-      id_usuario: user.id_usuario,
-      email: user.email,
-      rol: user.rol,
-      refugio: user.refugio,
-    });
-
-    const { contrasena, ...userWithoutPassword } = user;
-
-    return {
-      user: userWithoutPassword,
-      access_token: token,
-    };
   }
 
   async login(loginDto: LoginDto) {
@@ -117,8 +118,8 @@ export class AuthService {
       rol: user.rol,
       refugio: user.refugio,
     });
-
-    const { contrasena, ...userWithoutPassword } = user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { contrasena: _, ...userWithoutPassword } = user;
 
     return {
       user: userWithoutPassword,
@@ -138,8 +139,8 @@ export class AuthService {
     if (!user || !user.activo) {
       return null;
     }
-
-    const { contrasena, ...userWithoutPassword } = user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { contrasena: _, ...userWithoutPassword } = user;
     return userWithoutPassword as UserResponse;
   }
 

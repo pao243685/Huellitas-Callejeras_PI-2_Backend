@@ -1,26 +1,66 @@
 import {
-  IsEmail,
   IsString,
-  IsBoolean,
-  IsUUID,
+  IsInt,
+  IsOptional,
+  IsEmail,
   MinLength,
-  MaxLength,
   Matches,
+  MaxLength,
+  IsBoolean,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 
 export class RegisterDto {
-  @ApiProperty({ example: 'Juan' })
+  @ApiProperty({ example: 'Refugio Esperanza' })
   @IsString()
   @MaxLength(100)
   nombre: string;
 
-  @ApiProperty({ example: 'Pérez' })
+  @ApiProperty({ example: 30 })
+  @IsInt()
+  @Transform(({ value }) => parseInt(value, 10))
+  capacidad_max: number;
+
+  @ApiProperty({ example: 'Chiapas' })
+  @IsString()
+  estado: string;
+
+  @ApiProperty({ example: 'Tuxtla Gutiérrez' })
+  @IsString()
+  municipio: string;
+
+  @ApiProperty({ example: 'Centro' })
+  @IsString()
+  colonia: string;
+
+  @ApiProperty({ example: 'Av. Principal' })
+  @IsString()
+  calle: string;
+
+  @ApiProperty({ example: 123, required: false })
+  @IsOptional()
+  @IsInt()
+  @Transform(({ value }) => (value ? parseInt(value, 10) : null))
+  num_exterior?: number;
+
+  @ApiProperty({ example: 4, required: false })
+  @IsOptional()
+  @IsInt()
+  @Transform(({ value }) => (value ? parseInt(value, 10) : null))
+  num_interior?: number;
+
+  @ApiProperty({ example: 'Valentina' })
+  @IsString()
+  @MaxLength(100)
+  nombre_usuario: string;
+
+  @ApiProperty({ example: 'García' })
   @IsString()
   @MaxLength(100)
   apellido_p: string;
 
-  @ApiProperty({ example: 'García' })
+  @ApiProperty({ example: 'López' })
   @IsString()
   @MaxLength(100)
   apellido_m: string;
@@ -29,34 +69,16 @@ export class RegisterDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: 'Contraseña@123' })
+  @ApiProperty({ example: 'Contrasena@123' })
   @IsString()
   @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
-  @Matches(/[A-Z]/, {
-    message: 'La contraseña debe contener al menos una letra mayúscula',
-  })
-  @Matches(/[a-z]/, {
-    message: 'La contraseña debe contener al menos una letra minúscula',
-  })
-  @Matches(/[0-9]/, {
-    message: 'La contraseña debe contener al menos un número',
-  })
+  @Matches(/[A-Z]/, { message: 'Debe contener al menos una mayúscula' })
+  @Matches(/[a-z]/, { message: 'Debe contener al menos una minúscula' })
+  @Matches(/[0-9]/, { message: 'Debe contener al menos un número' })
   @Matches(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/, {
-    message: 'La contraseña debe contener al menos un carácter especial',
+    message: 'Debe contener al menos un carácter especial',
   })
   contrasena: string;
-
-  @ApiProperty({ example: true })
-  @IsBoolean()
-  activo: boolean;
-
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
-  @IsUUID()
-  rol_id: string;
-
-  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
-  @IsUUID()
-  refugio_id: string;
 
   @ApiProperty({ example: true })
   @IsBoolean()
