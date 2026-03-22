@@ -100,7 +100,7 @@ model Usuario {
   rol     Rol     @relation(fields: [rol_id], references: [id_roles], onDelete: Cascade)
   refugio Refugio @relation(fields: [refugio_id], references: [id_refugio], onDelete: Cascade)
   animales Animal[]
-  
+
   @@map("usuarios")
 }
 
@@ -167,6 +167,7 @@ model Etiqueta {
   refugio  Refugio          @relation(fields: [refugio_id], references: [id_refugio], onDelete: Cascade)
   animales EtiquetaAnimal[]
 
+  @@unique([nombre, refugio_id])
   @@map("etiquetas")
 }
 
