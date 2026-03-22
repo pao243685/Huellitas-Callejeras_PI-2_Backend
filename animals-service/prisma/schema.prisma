@@ -99,7 +99,8 @@ model Usuario {
 
   rol     Rol     @relation(fields: [rol_id], references: [id_roles], onDelete: Cascade)
   refugio Refugio @relation(fields: [refugio_id], references: [id_refugio], onDelete: Cascade)
-
+  animales Animal[]
+  
   @@map("usuarios")
 }
 
@@ -124,6 +125,7 @@ model Animal {
   updatedAt              DateTime?    @updatedAt @db.Timestamp(6)
 
   refugio     Refugio          @relation(fields: [refugio_id], references: [id_refugio], onDelete: Restrict)
+  usuario     Usuario          @relation(fields: [usuario_id], references: [id_usuario], onDelete: Restrict)
   movimientos Movimiento[]
   imagenes    AnimalImagen[]
   etiquetas   EtiquetaAnimal[]
