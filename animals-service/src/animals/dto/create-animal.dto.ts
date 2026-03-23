@@ -10,7 +10,7 @@ import {
 import { TamanoLista, SexoAnimal, EstadoAnimal } from '@prisma/client';
 import { Transform } from 'class-transformer';
 
-const toBoolean = ({ value }: { value: any }): boolean => {
+const toBoolean = ({ value }: { value: unknown }): boolean => {
   if (value === true || value === 1) return true;
   if (value === false || value === 0) return false;
   if (typeof value === 'string') {
@@ -35,6 +35,10 @@ export class CreateAnimalDto {
   @IsInt()
   @Transform(({ value }) => parseInt(value, 10))
   edad: number;
+
+  @IsOptional()
+  @IsEnum(['meses', 'años'])
+  unidad_edad?: 'meses' | 'años';
 
   @IsNumber()
   @Transform(({ value }) => parseFloat(value))

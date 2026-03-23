@@ -15,6 +15,10 @@ export class AnimalsService {
     private readonly validation: AnimalsValidationService,
   ) {}
 
+  private toMeses(edad: number, unidad?: 'meses' | 'años'): number {
+    return unidad === 'años' ? edad * 12 : edad;
+  }
+
   async findByRefugio(refugioId: string, page = 1, limit = 10) {
     await this.validation.validateRefugio(refugioId);
 
@@ -65,13 +69,15 @@ export class AnimalsService {
     await this.validation.validateRefugio(dto.refugio_id);
     await this.validation.validateUsuario(dto.usuario_id);
 
+    const edadEnMeses = this.toMeses(dto.edad, dto.unidad_edad);
+
     return this.prisma.animal.create({
       data: {
         nombre: dto.nombre,
         estado: dto.estado,
         especie: dto.especie,
         raza: dto.raza,
-        edad: dto.edad,
+        edad: edadEnMeses,
         peso: dto.peso,
         sexo: dto.sexo,
         tamano: dto.tamano,
@@ -103,11 +109,19 @@ export class AnimalsService {
       await this.validation.validateUsuario(dto.usuario_id);
     }
 
-    const { imagen, ...dataSinImagen } = dto;
+    const { imagen, unidad_edad, ...dataSinImagen } = dto;
+
+    const dataParaActualizar = { ...dataSinImagen };
+    if (dataParaActualizar.edad !== undefined) {
+      dataParaActualizar.edad = this.toMeses(
+        dataParaActualizar.edad,
+        unidad_edad,
+      );
+    }
 
     const animal = await this.prisma.animal.update({
       where: { id_animal: id },
-      data: dataSinImagen,
+      data: dataParaActualizar,
       include: {
         imagenes: true,
         etiquetas: { include: { etiqueta: true } },
