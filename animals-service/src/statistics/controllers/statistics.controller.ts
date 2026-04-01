@@ -29,4 +29,11 @@ export class StatisticsController {
       query.modo,
     );
   }
+
+  @Get('animales-activos/:refugio_id')
+  @Roles('admin', 'propietario', 'colaborador')
+  @UseGuards(RefugioOwnershipGuard)
+  async getAnimalesActivos(@Param('refugio_id') refugioId: string) {
+    return this.statisticsService.getAnimalesActivos(refugioId);
+  }
 }

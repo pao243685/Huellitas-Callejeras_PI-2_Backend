@@ -104,7 +104,7 @@ CREATE OR REPLACE VIEW vw_resumen_adoptabilidad AS
         LEFT JOIN perfil_refugio pr ON pr.refugio_id = ac.refugio_id
     )
     SELECT
-        r.nombre                                                  AS refugio,
+        p.refugio_id,
         CASE
             WHEN p.puntos IS NULL THEN 'Sin historial suficiente'
             WHEN p.puntos >= 4   THEN 'Fácil'
@@ -116,7 +116,7 @@ CREATE OR REPLACE VIEW vw_resumen_adoptabilidad AS
         COUNT(*) FILTER (WHERE p.especie = 'Gato')                AS gatos,
         ROUND(
             100.0 * COUNT(*)
-            / NULLIF(SUM(COUNT(*)) OVER (PARTITION BY r.nombre), 0)
+            / NULLIF(SUM(COUNT(*)) OVER (PARTITION BY p.refugio_id), 0)
         , 1)                                                      AS pct_sobre_total,
 
         SUM(CASE
@@ -125,9 +125,8 @@ CREATE OR REPLACE VIEW vw_resumen_adoptabilidad AS
         END)                                                      AS espacios_en_riesgo
 
     FROM puntuacion p
-    JOIN refugios r ON r.id_refugio = p.refugio_id
     GROUP BY
-        r.nombre,
+        p.refugio_id,
         nivel_adoptabilidad,
         CASE
             WHEN p.puntos IS NULL THEN 4
@@ -136,7 +135,7 @@ CREATE OR REPLACE VIEW vw_resumen_adoptabilidad AS
             ELSE                      2
         END
     ORDER BY
-        r.nombre ASC,
+        p.refugio_id ASC,
         CASE
             WHEN p.puntos IS NULL THEN 4
             WHEN p.puntos >= 4   THEN 0
@@ -268,7 +267,7 @@ CREATE OR REPLACE VIEW vw_animales_activos AS
         LEFT JOIN perfil_refugio pr ON pr.refugio_id = ac.refugio_id
     )
     SELECT
-        r.nombre                                                  AS refugio,
+        p.refugio_id,
         p.id_animal,
         p.nombre                                                  AS animal,
         p.especie,
@@ -292,9 +291,8 @@ CREATE OR REPLACE VIEW vw_animales_activos AS
             ELSE                            'historico'
         END                                                       AS nivel_confianza
     FROM puntuacion p
-    JOIN refugios r ON r.id_refugio = p.refugio_id
     ORDER BY
-        r.nombre         ASC,
+        p.refugio_id         ASC,
         p.dias_en_refugio DESC;
 
     -- Jusficación
@@ -413,7 +411,7 @@ CREATE OR REPLACE VIEW vw_alertas_movimientos_no_adopcion AS
             WHEN ea.salidas_defuncion >= 1
                 THEN 'Defunción registrada'
             WHEN ea.salidas_extravio >= 1
-                THEN 'xtravío registrado'
+                THEN 'Extravío registrado'
             WHEN ea.ultimo_movimiento = 'entrada'
             AND ea.dias_estancia_actual > 180
                 THEN 'Larga estancia: más de 6 meses'
@@ -428,7 +426,7 @@ CREATE OR REPLACE VIEW vw_alertas_movimientos_no_adopcion AS
             WHEN ea.score_interno >= 2 THEN 'Medio'
             ELSE                           'Bajo'
         END                                                        AS nivel_riesgo,
-        r.nombre                                                   AS refugio,
+        ea.refugio_id,
         ea.id_animal,
         ea.nombre                                                  AS animal,
         ea.especie,
@@ -440,7 +438,6 @@ CREATE OR REPLACE VIEW vw_alertas_movimientos_no_adopcion AS
         ea.ultima_salida::DATE                                     AS fecha_ultima_salida
 
     FROM estado_actual ea
-    JOIN refugios r ON r.id_refugio = ea.refugio_id
     WHERE ea.primera_entrada IS NOT NULL
     AND (
         ea.fue_devuelto                          = TRUE
@@ -450,9 +447,9 @@ CREATE OR REPLACE VIEW vw_alertas_movimientos_no_adopcion AS
         OR ea.ultimo_movimiento  = 'entrada'
     )
     ORDER BY
-        r.nombre                 ASC,
-        ea.score_interno         DESC,
-        ea.dias_estancia_actual  DESC NULLS LAST;
+        ea.refugio_id                ASC,
+        ea.score_interno             DESC,
+        ea.dias_estancia_actual      DESC NULLS LAST;
 
 
 
