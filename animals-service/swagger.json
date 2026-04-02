@@ -398,6 +398,33 @@
           "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
+    },
+    "/statistics/animales-activos/{refugio_id}": {
+      "get": {
+        "tags": ["Estadísticas"],
+        "summary": "Obtener listado de animales activos con nivel de adoptabilidad",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "refugio_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de animales activos con adoptabilidad",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/AnimalActivoRow" } }
+              }
+            }
+          },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
     }
   },
   "components": {
@@ -676,6 +703,54 @@
           "activo":     { "type": "boolean" },
           "rol_id":     { "type": "string", "format": "uuid" },
           "refugio_id": { "type": "string", "format": "uuid" }
+        }
+      },
+      "AnimalActivoRow": {
+        "type": "object",
+        "description": "Información de un animal activo en el refugio con su nivel de adoptabilidad",
+        "properties": {
+          "animal_id":          { "type": "string", "format": "uuid", "example": "550e8400-e29b-41d4-a716-446655440000" },
+          "animal":             { "type": "string", "example": "Firulais" },
+          "especie":            { "type": "string", "example": "Perro" },
+          "raza":               { "type": "string", "example": "Labrador" },
+          "sexo":               { "$ref": "#/components/schemas/SexoAnimal" },
+          "edad":               { "type": "integer", "description": "Edad en meses", "example": 36 },
+          "estado":             { "$ref": "#/components/schemas/EstadoAnimal" },
+          "tamano":             { "$ref": "#/components/schemas/TamanoLista" },
+          "peso":               { "type": "number", "example": 25.5 },
+          "lugar":              { "type": "string", "example": "Jaula A1" },
+          "dias_en_refugio":    { "type": "integer", "example": 45 },
+          "fecha_ingreso":      { "type": "string", "format": "date", "example": "2024-02-15" },
+          "adoptability_level": { "type": "integer", "description": "Nivel de adoptabilidad (1-5, siendo 5 el más adoptable)", "example": 4 },
+          "enfermedad_no_tratable": { "type": "boolean", "example": false },
+          "discapacidad":       { "type": "boolean", "example": false },
+          "es_agresivo":        { "type": "boolean", "example": false },
+          "descripcion":        { "type": "string", "example": "Animal tranquilo y sociable" }
+        }
+      },
+      "IndicadoresResponse": {
+        "type": "object",
+        "description": "Respuesta con los indicadores de adopción del refugio",
+        "properties": {
+          "adoptability_score": { "type": "number", "description": "Puntuación de adoptabilidad del refugio (0-100)" },
+          "total_animals": { "type": "integer", "description": "Total de animales en el refugio" },
+          "animals_for_adoption": { "type": "integer", "description": "Animales disponibles para adopción" },
+          "at_risk_animals": { "type": "integer", "description": "Animales en riesgo" }
+        }
+      },
+      "HistorialResponse": {
+        "type": "array",
+        "description": "Historial de movimientos agrupados por periodo",
+        "items": {
+          "type": "object",
+          "properties": {
+            "periodo": { "type": "string", "example": "2024-01" },
+            "ocupacion_total": { "type": "integer" },
+            "entradas_acum": { "type": "integer" },
+            "salidas_adopcion": { "type": "integer" },
+            "salidas_defuncion": { "type": "integer" },
+            "salidas_extravio": { "type": "integer" }
+          }
         }
       }
     }
