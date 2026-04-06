@@ -6,6 +6,15 @@ import { join } from 'path';
 import * as fs from 'fs';
 import { AppModule } from './app.module';
 
+interface BigIntWithToJSON {
+  toJSON(this: bigint): string;
+}
+(BigInt.prototype as unknown as BigIntWithToJSON).toJSON = function (
+  this: bigint,
+): string {
+  return this.toString();
+};
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 

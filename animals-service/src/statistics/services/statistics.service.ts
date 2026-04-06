@@ -12,6 +12,14 @@ import {
 export class StatisticsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private serializeBigInt<T>(rows: T[]): T[] {
+    return JSON.parse(
+      JSON.stringify(rows, (_: string, value: unknown) =>
+        typeof value === 'bigint' ? Number(value) : value,
+      ),
+    ) as T[];
+  }
+
   private async validateRefugio(refugioId: string) {
     const refugio = await this.prisma.refugio.findUnique({
       where: { id_refugio: refugioId },
@@ -25,21 +33,27 @@ export class StatisticsService {
   async getIndicadores(refugioId: string) {
     const refugio = await this.validateRefugio(refugioId);
 
-    const indicadores = await this.prisma.$queryRaw<IndicadorRow[]>`
-      SELECT * FROM get_adoption_profile(${refugioId}::uuid)
-    `;
+    const indicadores = this.serializeBigInt(
+      await this.prisma.$queryRaw<IndicadorRow[]>`
+        SELECT * FROM get_adoption_profile(${refugioId}::uuid)
+      `,
+    );
 
-    const resumenRows = await this.prisma.$queryRaw<ResumenRow[]>`
-      SELECT *
-      FROM vw_resumen_adoptabilidad
-      WHERE refugio_id = ${refugioId}::uuid
-    `;
+    const resumenRows = this.serializeBigInt(
+      await this.prisma.$queryRaw<ResumenRow[]>`
+        SELECT *
+        FROM vw_resumen_adoptabilidad
+        WHERE refugio_id = ${refugioId}::uuid
+      `,
+    );
 
-    const alertas = await this.prisma.$queryRaw<AlertaRow[]>`
-      SELECT *
-      FROM vw_alertas_movimientos_no_adopcion
-      WHERE refugio_id = ${refugioId}::uuid
-    `;
+    const alertas = this.serializeBigInt(
+      await this.prisma.$queryRaw<AlertaRow[]>`
+        SELECT *
+        FROM vw_alertas_movimientos_no_adopcion
+        WHERE refugio_id = ${refugioId}::uuid
+      `,
+    );
 
     const veredicto = this.calcularVeredicto(
       resumenRows,
@@ -125,14 +139,16 @@ export class StatisticsService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const refugio = await this.validateRefugio(refugioId);
 
-    const rows = await this.prisma.$queryRaw<GraficaRow[]>`
-      SELECT * FROM get_movimientos_grafica(
-        ${refugioId}::uuid,
-        ${new Date(fechaIni)}::timestamp,
-        ${new Date(fechaFin)}::timestamp,
-        ${modo}::text
-      )
-    `;
+    const rows = this.serializeBigInt(
+      await this.prisma.$queryRaw<GraficaRow[]>`
+        SELECT * FROM get_movimientos_grafica(
+          ${refugioId}::uuid,
+          ${new Date(fechaIni)}::timestamp,
+          ${new Date(fechaFin)}::timestamp,
+          ${modo}::text
+        )
+      `,
+    );
 
     return {
       refugio_id: refugioId,
@@ -146,12 +162,14 @@ export class StatisticsService {
   async getAnimalesActivos(refugioId: string) {
     const refugio = await this.validateRefugio(refugioId);
 
-    const animales = await this.prisma.$queryRaw<AnimalesActivosRow[]>`
-      SELECT *
-      FROM vw_animales_activos
-      WHERE refugio_id = ${refugioId}::uuid
-      ORDER BY dias_en_refugio DESC
-    `;
+    const animales = this.serializeBigInt(
+      await this.prisma.$queryRaw<AnimalesActivosRow[]>`
+        SELECT *
+        FROM vw_animales_activos
+        WHERE refugio_id = ${refugioId}::uuid
+        ORDER BY dias_en_refugio DESC
+      `,
+    );
 
     return {
       refugio_id: refugioId,
