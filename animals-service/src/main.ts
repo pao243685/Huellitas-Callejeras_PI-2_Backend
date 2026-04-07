@@ -35,15 +35,17 @@ async function bootstrap() {
 
   app.enableCors();
 
+  app.setGlobalPrefix('api/v1');
+
   const swaggerDocument = JSON.parse(
     fs.readFileSync(join(process.cwd(), 'swagger.json'), 'utf8'),
   ) as OpenAPIObject;
 
-  SwaggerModule.setup('api/docs', app, swaggerDocument);
+  SwaggerModule.setup('docs', app, swaggerDocument);
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
   console.log(`Animals Service corriendo en http://localhost:${port}`);
-  console.log(`Swagger en http://localhost:${port}/api/docs`);
+  console.log(`Swagger en http://localhost:${port}/api/v1/docs`);
 }
 bootstrap();

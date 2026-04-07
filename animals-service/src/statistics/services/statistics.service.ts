@@ -53,7 +53,7 @@ export class StatisticsService {
         FROM vw_alertas_movimientos_no_adopcion
         WHERE refugio_id = ${refugioId}::uuid
       `,
-    );
+    ).filter((alerta) => alerta.tipo_alerta !== 'Sin alertas');
 
     const veredicto = this.calcularVeredicto(
       resumenRows,
