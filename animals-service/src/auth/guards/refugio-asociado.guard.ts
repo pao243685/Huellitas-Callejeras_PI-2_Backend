@@ -12,15 +12,32 @@ export class RefugioOwnershipGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<{
       user: UserResponse;
       params: Record<string, string>;
+      body: Record<string, unknown>;
     }>();
 
     const user = request.user;
-    const refugioIdParam = request.params['refugio_id'];
+    
+    // Buscar refugio_id en parámetros (para GET, DELETE, etc.)
+    let refugioId: string | undefined = request.params['refugio_id'];
+    
+    // Si no está en parámetros, buscar en body (para POST, PATCH, etc.)
+    if (!refugioId && request.body?.refugio_id) {
+      refugioId = request.body.refugio_id as string;
+    }
 
-    if (!refugioIdParam) return true;
+    if (!refugioId) return true;
 
-    if (user?.refugio?.id_refugio !== refugioIdParam) {
-      throw new ForbiddenException('No puedes acceder a datos de otro refugio');
+    // Permitir si es admin
+    if (user?.rol?.nombre === 'admin') {
+      return true;
+    }
+
+    // Para propietario, verificar que el refugio_id coincida con su refugio
+    if (user?.refugio?.id_refugio !== refugioId) {
+      throw new ForbiddenException(
+        'No puedes acceder a datos de otro refugio. Tu refugio: ' + 
+        user?.refugio?.id_refugio + ', solicitado: ' + refugioId,
+      );
     }
 
     return true;
