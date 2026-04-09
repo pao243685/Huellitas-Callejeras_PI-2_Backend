@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { MovementsValidationService } from './movements.validation.service';
 import { CreateMovementDto } from '../dto/create-movement.dto';
+import { MovimientoMotivo } from '@prisma/client';
 
 @Injectable()
 export class MovementsService {
@@ -50,7 +51,17 @@ export class MovementsService {
   }
 
   async delete(id: string, refugioId: string) {
-    await this.validation.validateMovimientoPertenece(id, refugioId);
+    const movimiento = await this.validation.validateMovimientoPertenece(
+      id,
+      refugioId,
+    );
+
+    if (movimiento.motivo === MovimientoMotivo.defuncion) {
+      throw new BadRequestException(
+        'No se puede eliminar un movimiento de defunción. Este registro es permanente.',
+      );
+    }
+
     await this.prisma.movimiento.delete({ where: { id_movimiento: id } });
     return { message: 'Movimiento eliminado', id };
   }
