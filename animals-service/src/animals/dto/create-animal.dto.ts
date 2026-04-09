@@ -74,4 +74,7 @@ export class CreateAnimalDto {
 
   @IsUUID()
   usuario_id!: string;
+
+  @IsEnum(['adopcion', 'recuperacion'])
+  estado!: string;
 }
