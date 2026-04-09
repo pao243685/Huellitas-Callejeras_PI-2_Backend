@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -37,7 +32,10 @@ export class AnimalsSpController {
       example: { id_animal_creado: 'b1c2d3e4-0000-0000-0000-000000000099' },
     },
   })
-  @ApiResponse({ status: 400, description: 'Datos inválidos o refugio sin capacidad' })
+  @ApiResponse({
+    status: 400,
+    description: 'Datos inválidos o refugio sin capacidad',
+  })
   @ApiResponse({ status: 401, description: 'Token JWT no válido o ausente' })
   @ApiResponse({ status: 403, description: 'Sin permisos suficientes' })
   async registrarAnimal(@Body() dto: RegistrarAnimalSpDto) {
