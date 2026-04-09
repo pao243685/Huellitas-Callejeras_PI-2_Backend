@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   Controller,
   Get,
@@ -66,6 +67,10 @@ export class AnimalsController {
     @Body() dto: CreateAnimalDto,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<AnimalConRelaciones> {
+    console.log('=== DEBUG CONTROLLER: create ===');
+    console.log('DTO recibido:', JSON.stringify(dto, null, 2));
+    console.log('Archivo recibido:', file ? file.filename : 'No hay archivo');
+
     const urlImagen = file ? `uploads/animals/${file.filename}` : undefined;
 
     const edadEnMeses =
@@ -88,12 +93,16 @@ export class AnimalsController {
       refugio_id: dto.refugio_id,
       url_imagen: urlImagen,
       estado: dto.estado,
-      tipo_movimiento: dto.tipo_movimiento || 'entrada',
-      motivo: dto.motivo || 'rescate',
-      fecha_movimiento: dto.fecha_movimiento,
+      tipo_movimiento: 'entrada',
+      motivo: 'rescate',
+      fecha_movimiento: new Date().toISOString(),
     };
 
-    return this.animalsSpService.registrarAnimalCompleto(spDto);
+    console.log('SP DTO construido:', JSON.stringify(spDto, null, 2));
+
+    const result = await this.animalsSpService.registrarAnimalCompleto(spDto);
+    console.log('Resultado del SP:', result ? result.id_animal : 'Sin resultado');
+    return result;
   }
 
   @Patch(':id')
