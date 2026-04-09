@@ -29,46 +29,60 @@ export class AnimalsSpService {
     };
 
     const tamanoDb = tamanoMap[dto.tamano] ?? dto.tamano;
+    const estado = dto.estado || 'adopcion';
+    const tipoMovimiento = dto.tipo_movimiento || 'entrada';
+    const motivo = dto.motivo || 'rescate';
+    const fechaMovimiento = dto.fecha_movimiento
+      ? new Date(dto.fecha_movimiento)
+      : new Date();
 
-    const result = await this.prisma.$queryRaw<
-      { p_id_animal_creado: string }[]
-    >`
+    await this.prisma.$executeRawUnsafe(
+      `
       CALL sp_registrar_animal_completo(
-        ${dto.nombre}::VARCHAR,
-        ${dto.especie}::VARCHAR,
-        ${dto.raza}::VARCHAR,
-        ${dto.edad}::INTEGER,
-        ${dto.peso}::DECIMAL,
-        ${dto.sexo}::"sexo_animal",
-        ${tamanoDb}::"tamano_lista",
-        ${dto.enfermedad_no_tratable}::BOOLEAN,
-        ${dto.discapacidad}::BOOLEAN,
-        ${dto.es_agresivo}::BOOLEAN,
-        ${dto.lugar}::TEXT,
-        ${dto.descripcion}::TEXT,
-        ${dto.refugio_id}::UUID,
-        ${dto.usuario_id}::UUID,
-        NULL::UUID,
-        ${dto.url_imagen ?? null}::TEXT,
-        ${dto.fecha_rescate ? new Date(dto.fecha_rescate) : new Date()}::TIMESTAMP
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+        $13, $14, $15, $16, $17, $18, NULL, $19
       )
-    `;
+    `,
+      dto.nombre,
+      dto.especie,
+      dto.raza,
+      dto.edad,
+      dto.peso,
+      dto.sexo,
+      tamanoDb,
+      dto.enfermedad_no_tratable,
+      dto.discapacidad,
+      dto.es_agresivo,
+      dto.lugar,
+      dto.descripcion,
+      dto.usuario_id,
+      dto.refugio_id,
+      estado,
+      tipoMovimiento,
+      motivo,
+      fechaMovimiento,
+      dto.url_imagen ?? null,
+    );
 
-    const id = result?.[0]?.p_id_animal_creado;
-
-    if (!id) {
-      throw new BadRequestException(
-        'El SP no devolvió el ID del animal creado. Verifique los datos enviados.',
-      );
-    }
-
-    const animal = await this.prisma.animal.findUniqueOrThrow({
-      where: { id_animal: id },
+    const animal = await this.prisma.animal.findFirst({
+      where: {
+        usuario_id: dto.usuario_id,
+        refugio_id: dto.refugio_id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
       include: {
         imagenes: true,
         etiquetas: { include: { etiqueta: true } },
       },
     });
+
+    if (!animal) {
+      throw new BadRequestException(
+        'El animal no fue creado correctamente. Verifique los datos enviados.',
+      );
+    }
 
     return animal;
   }

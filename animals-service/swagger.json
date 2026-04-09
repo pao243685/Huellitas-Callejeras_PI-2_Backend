@@ -6,10 +6,8 @@
     "version": "1.0.0"
   },
   "servers": [
-    { "url": "https://hc-backend.duckdns.org" }
-  ],
-  "security": [
-    { "bearerAuth": [] }
+    { "url": "https://hc-backend.duckdns.org" },
+    { "url": "http://localhost:3000" }
   ],
   "paths": {
     "/auth/register": {
@@ -67,24 +65,10 @@
       "get": {
         "tags": ["Refugios"],
         "summary": "Obtener todos los refugios",
+        "security": [{ "bearerAuth": [] }],
         "responses": {
-          "200": { "description": "Lista de refugios", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Refugio" } } } } }
-        }
-      },
-      "post": {
-        "tags": ["Refugios"],
-        "summary": "Crear un refugio",
-        "security": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/CreateRefugioBody" }
-            }
-          }
-        },
-        "responses": {
-          "201": { "description": "Refugio creado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Refugio" } } } }
+          "200": { "description": "Lista de refugios", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Refugio" } } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
     },
@@ -92,28 +76,34 @@
       "get": {
         "tags": ["Refugios"],
         "summary": "Obtener un refugio por ID",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
           "200": { "description": "Refugio encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Refugio" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       },
       "patch": {
         "tags": ["Refugios"],
         "summary": "Actualizar un refugio",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateRefugioBody" } } } },
         "responses": {
           "200": { "description": "Refugio actualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Refugio" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       },
       "delete": {
         "tags": ["Refugios"],
         "summary": "Eliminar un refugio",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
           "204": { "description": "Refugio eliminado" },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -122,10 +112,10 @@
       "post": {
         "tags": ["Roles"],
         "summary": "Crear un rol",
-        "security": [],
         "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateRolBody" } } } },
         "responses": {
-          "201": { "description": "Rol creado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Rol" } } } }
+          "201": { "description": "Rol creado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Rol" } } } },
+          "400": { "description": "Datos inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
     },
@@ -133,10 +123,9 @@
       "get": {
         "tags": ["Roles"],
         "summary": "Obtener roles por refugio",
-        "security": [],
         "parameters": [{ "name": "refugio_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
-          "200": { "description": "Lista de roles", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/RolConRefugio" } } } } },
+          "200": { "description": "Lista de roles", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Rol" } } } } },
           "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -145,7 +134,6 @@
       "get": {
         "tags": ["Roles"],
         "summary": "Obtener un rol por ID",
-        "security": [],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
           "200": { "description": "Rol encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Rol" } } } },
@@ -155,19 +143,23 @@
       "patch": {
         "tags": ["Roles"],
         "summary": "Actualizar un rol",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateRolBody" } } } },
         "responses": {
           "200": { "description": "Rol actualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Rol" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Rol no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       },
       "delete": {
         "tags": ["Roles"],
         "summary": "Eliminar un rol",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
           "204": { "description": "Rol eliminado" },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Rol no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -175,10 +167,15 @@
     "/animals": {
       "post": {
         "tags": ["Animales"],
-        "summary": "Crear un animal",
+        "summary": "Registrar animal completo (SP - Transacción Atómica)",
+        "security": [{ "bearerAuth": [] }],
+        "description": "Crea el expediente del animal con imagen opcional mediante un stored procedure que ejecuta todo en una sola transacción atómica",
         "requestBody": { "required": true, "content": { "multipart/form-data": { "schema": { "$ref": "#/components/schemas/CreateAnimalBody" } } } },
         "responses": {
-          "201": { "description": "Animal creado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Animal" } } } },
+          "201": { "description": "Animal registrado exitosamente", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Animal" } } } },
+          "400": { "description": "Datos inválidos o sin capacidad", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sin permisos suficientes", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Refugio o usuario no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -186,10 +183,17 @@
     "/animals/refugio/{refugio_id}": {
       "get": {
         "tags": ["Animales"],
-        "summary": "Obtener animales por refugio",
-        "parameters": [{ "name": "refugio_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "summary": "Obtener animales por refugio (paginado)",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "refugio_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "page", "in": "query", "required": false, "schema": { "type": "integer", "default": 1, "minimum": 1 }, "description": "Número de página" },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "default": 10, "minimum": 1, "maximum": 100 }, "description": "Animales por página" }
+        ],
         "responses": {
-          "200": { "description": "Lista de animales", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/AnimalConRefugio" } } } } },
+          "200": { "description": "Lista de animales paginada", "content": { "application/json": { "schema": { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/AnimalConRefugio" } }, "total": { "type": "integer" }, "page": { "type": "integer" }, "limit": { "type": "integer" }, "pages": { "type": "integer" } } } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sin acceso al refugio", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -198,47 +202,70 @@
       "get": {
         "tags": ["Animales"],
         "summary": "Obtener un animal por ID",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
           "200": { "description": "Animal encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Animal" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Animal no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       },
       "patch": {
         "tags": ["Animales"],
         "summary": "Actualizar un animal",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "requestBody": { "content": { "multipart/form-data": { "schema": { "$ref": "#/components/schemas/UpdateAnimalBody" } } } },
         "responses": {
           "200": { "description": "Animal actualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Animal" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Animal no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       },
       "delete": {
         "tags": ["Animales"],
         "summary": "Eliminar un animal",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
           "200": { "description": "Animal eliminado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Animal no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/animals/imagen/{imagenId}": {
+      "delete": {
+        "tags": ["Animales"],
+        "summary": "Eliminar una imagen de animal",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "imagenId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": {
+          "200": { "description": "Imagen eliminada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Imagen no encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
     },
     "/movements": {
       "get": {
         "tags": ["Movimientos"],
-        "summary": "Obtener todos los movimientos",
+        "summary": "Obtener todos los movimientos del refugio",
+        "security": [{ "bearerAuth": [] }],
         "responses": {
-          "200": { "description": "Lista de movimientos", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/MovimientoConAnimal" } } } } }
+          "200": { "description": "Lista de movimientos", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/MovimientoConAnimal" } } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       },
       "post": {
         "tags": ["Movimientos"],
         "summary": "Crear un movimiento",
+        "security": [{ "bearerAuth": [] }],
         "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateMovimientoBody" } } } },
         "responses": {
           "201": { "description": "Movimiento creado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MovimientoConAnimal" } } } },
           "400": { "description": "Motivo inválido para el tipo", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Animal no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -247,9 +274,11 @@
       "get": {
         "tags": ["Movimientos"],
         "summary": "Obtener movimientos por animal",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "animal_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
           "200": { "description": "Lista de movimientos del animal", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/MovimientoConAnimal" } } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Animal no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -258,18 +287,22 @@
       "get": {
         "tags": ["Movimientos"],
         "summary": "Obtener un movimiento por ID",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
           "200": { "description": "Movimiento encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MovimientoConAnimal" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Movimiento no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       },
       "delete": {
         "tags": ["Movimientos"],
         "summary": "Eliminar un movimiento",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
           "204": { "description": "Movimiento eliminado" },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Movimiento no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -278,9 +311,12 @@
       "post": {
         "tags": ["Usuarios"],
         "summary": "Crear un usuario",
+        "security": [{ "bearerAuth": [] }],
         "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateUsuarioBody" } } } },
         "responses": {
           "201": { "description": "Usuario creado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Usuario" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sin permisos suficientes", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -289,9 +325,12 @@
       "get": {
         "tags": ["Usuarios"],
         "summary": "Obtener usuarios por refugio",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "refugio_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
           "200": { "description": "Lista de usuarios", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/UsuarioConRelaciones" } } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sin permisos suficientes", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -300,29 +339,129 @@
       "get": {
         "tags": ["Usuarios"],
         "summary": "Obtener un usuario por ID",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
           "200": { "description": "Usuario encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UsuarioConRelaciones" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Usuario no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       },
       "patch": {
         "tags": ["Usuarios"],
         "summary": "Actualizar un usuario",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateUsuarioBody" } } } },
         "responses": {
           "200": { "description": "Usuario actualizado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Usuario" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sin permisos suficientes", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Usuario no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       },
       "delete": {
         "tags": ["Usuarios"],
         "summary": "Eliminar un usuario",
+        "security": [{ "bearerAuth": [] }],
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
         "responses": {
           "200": { "description": "Usuario eliminado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sin permisos suficientes", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Usuario no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/etiquetas": {
+      "post": {
+        "tags": ["Etiquetas"],
+        "summary": "Crear una etiqueta",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateEtiquetaBody" } } } },
+        "responses": {
+          "201": { "description": "Etiqueta creada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Etiqueta" } } } },
+          "400": { "description": "Datos inválidos", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/etiquetas/refugio/{refugio_id}": {
+      "get": {
+        "tags": ["Etiquetas"],
+        "summary": "Obtener etiquetas por refugio",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "refugio_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": {
+          "200": { "description": "Lista de etiquetas", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Etiqueta" } } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sin acceso al refugio", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/etiquetas/{id}": {
+      "get": {
+        "tags": ["Etiquetas"],
+        "summary": "Obtener una etiqueta por ID",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": {
+          "200": { "description": "Etiqueta encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Etiqueta" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Etiqueta no encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "patch": {
+        "tags": ["Etiquetas"],
+        "summary": "Actualizar una etiqueta",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateEtiquetaBody" } } } },
+        "responses": {
+          "200": { "description": "Etiqueta actualizada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Etiqueta" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Etiqueta no encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Etiquetas"],
+        "summary": "Eliminar una etiqueta",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": {
+          "204": { "description": "Etiqueta eliminada" },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Etiqueta no encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/etiquetas/animal/{animal_id}": {
+      "post": {
+        "tags": ["Etiquetas"],
+        "summary": "Asignar etiqueta a un animal",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [{ "name": "animal_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AsignarEtiquetaBody" } } } },
+        "responses": {
+          "201": { "description": "Etiqueta asignada", "content": { "application/json": { "schema": { "type": "object", "properties": { "id": { "type": "string", "format": "uuid" }, "animal_id": { "type": "string", "format": "uuid" }, "etiqueta_id": { "type": "string", "format": "uuid" } } } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Animal o etiqueta no encontrados", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/etiquetas/animal/{animal_id}/{etiqueta_id}": {
+      "delete": {
+        "tags": ["Etiquetas"],
+        "summary": "Quitar etiqueta de un animal",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          { "name": "animal_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "etiqueta_id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "description": "Etiqueta removida", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeleteResponse" } } } },
+          "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "404": { "description": "Asignación no encontrada", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
     },
@@ -349,6 +488,7 @@
             }
           },
           "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sin acceso al refugio", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -395,6 +535,7 @@
           },
           "400": { "description": "Parámetros inválidos (fechas o modo)", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sin acceso al refugio", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -422,6 +563,7 @@
             }
           },
           "401": { "description": "No autenticado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Sin acceso al refugio", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
           "404": { "description": "Refugio no encontrado", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
         }
       }
@@ -751,6 +893,61 @@
             "salidas_defuncion": { "type": "integer" },
             "salidas_extravio": { "type": "integer" }
           }
+        }
+      },
+      "Etiqueta": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "nombre": { "type": "string", "example": "Especial" },
+          "descripcion": { "type": "string", "nullable": true },
+          "refugio_id": { "type": "string", "format": "uuid" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateEtiquetaBody": {
+        "type": "object",
+        "required": ["nombre", "refugio_id"],
+        "properties": {
+          "nombre": { "type": "string", "example": "Especial" },
+          "descripcion": { "type": "string", "nullable": true, "example": "Animal con necesidades especiales" },
+          "refugio_id": { "type": "string", "format": "uuid" }
+        }
+      },
+      "UpdateEtiquetaBody": {
+        "type": "object",
+        "properties": {
+          "nombre": { "type": "string" },
+          "descripcion": { "type": "string", "nullable": true }
+        }
+      },
+      "AsignarEtiquetaBody": {
+        "type": "object",
+        "required": ["etiqueta_id"],
+        "properties": {
+          "etiqueta_id": { "type": "string", "format": "uuid" }
+        }
+      },
+      "RegistrarAnimalSpBody": {
+        "type": "object",
+        "required": ["nombre", "especie", "raza", "edad", "peso", "sexo", "tamano", "lugar", "descripcion", "usuario_id", "refugio_id"],
+        "properties": {
+          "nombre": { "type": "string", "example": "Firulais" },
+          "especie": { "type": "string", "example": "Perro" },
+          "raza": { "type": "string", "example": "Labrador" },
+          "edad": { "type": "integer", "description": "Edad en meses", "example": 36 },
+          "peso": { "type": "number", "example": 25.5 },
+          "sexo": { "$ref": "#/components/schemas/SexoAnimal" },
+          "tamano": { "$ref": "#/components/schemas/TamanoLista" },
+          "enfermedad_no_tratable": { "type": "boolean", "default": false },
+          "discapacidad": { "type": "boolean", "default": false },
+          "es_agresivo": { "type": "boolean", "default": false },
+          "lugar": { "type": "string", "example": "Jaula A1" },
+          "descripcion": { "type": "string", "example": "Animal tranquilo" },
+          "usuario_id": { "type": "string", "format": "uuid" },
+          "refugio_id": { "type": "string", "format": "uuid" },
+          "url_imagen": { "type": "string", "nullable": true }
         }
       }
     }

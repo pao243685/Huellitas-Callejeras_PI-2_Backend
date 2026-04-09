@@ -27,73 +27,91 @@ export class RegistrarAnimalSpDto {
   @ApiProperty({ example: 'Rex', maxLength: 100 })
   @IsString()
   @MaxLength(100)
-  nombre: string;
+  nombre!: string;
 
   @ApiProperty({ example: 'Perro', maxLength: 100 })
   @IsString()
   @MaxLength(100)
-  especie: string;
+  especie!: string;
 
   @ApiProperty({ example: 'Labrador', maxLength: 100 })
   @IsString()
   @MaxLength(100)
-  raza: string;
+  raza!: string;
 
   @ApiProperty({ example: 24, description: 'Edad en meses' })
   @IsInt()
   @Min(0)
   @Transform(({ value }) => parseInt(value, 10))
-  edad: number;
+  edad!: number;
 
   @ApiProperty({ example: 15.5 })
   @IsNumber()
   @Min(0)
   @Transform(({ value }) => parseFloat(value))
-  peso: number;
+  peso!: number;
 
   @ApiProperty({ enum: SexoAnimal, example: SexoAnimal.Macho })
   @IsEnum(SexoAnimal)
-  sexo: SexoAnimal;
+  sexo!: SexoAnimal;
 
   @ApiProperty({ enum: TamanoLista, example: TamanoLista.mediano })
   @IsEnum(TamanoLista)
-  tamano: TamanoLista;
+  tamano!: TamanoLista;
 
   @ApiProperty({ example: false })
   @IsBoolean()
   @Transform(toBoolean)
-  enfermedad_no_tratable: boolean;
+  enfermedad_no_tratable!: boolean;
 
   @ApiProperty({ example: false })
   @IsBoolean()
   @Transform(toBoolean)
-  discapacidad: boolean;
+  discapacidad!: boolean;
 
   @ApiProperty({ example: false })
   @IsBoolean()
   @Transform(toBoolean)
-  es_agresivo: boolean;
+  es_agresivo!: boolean;
 
   @ApiProperty({ example: 'Colonia Centro, Guadalajara' })
   @IsString()
-  lugar: string;
+  lugar!: string;
 
-  @ApiProperty({ example: 'Encontrado en la vía pública, buen estado general.' })
+  @ApiProperty({
+    example: 'Encontrado en la vía pública, buen estado general.',
+  })
   @IsString()
-  descripcion: string;
+  descripcion!: string;
 
-  @ApiProperty({ example: 'b1c2d3e4-0000-0000-0000-000000000005', format: 'uuid', description: 'UUID del usuario que registra el animal' })
+  @ApiProperty({
+    example: 'b1c2d3e4-0000-0000-0000-000000000005',
+    format: 'uuid',
+    description: 'UUID del usuario que registra el animal',
+  })
   @IsUUID()
-  usuario_id: string;
+  usuario_id!: string;
 
-  @ApiProperty({ example: 'b1c2d3e4-0000-0000-0000-000000000001', format: 'uuid' })
+  @ApiProperty({
+    example: 'b1c2d3e4-0000-0000-0000-000000000001',
+    format: 'uuid',
+  })
   @IsUUID()
-  refugio_id: string;
+  refugio_id!: string;
 
-  @ApiPropertyOptional({ example: 'https://cdn.example.com/img/rex.jpg' })
+  @ApiProperty({ enum: ['adopcion', 'recuperacion'], example: 'adopcion' })
+  @IsEnum(['adopcion', 'recuperacion'])
+  estado!: string;
+
+  @ApiPropertyOptional({ enum: ['entrada'], example: 'entrada' })
   @IsOptional()
   @IsString()
-  url_imagen?: string;
+  tipo_movimiento?: string;
+
+  @ApiPropertyOptional({ enum: ['rescate', 'retorno'], example: 'rescate' })
+  @IsOptional()
+  @IsString()
+  motivo?: string;
 
   @ApiPropertyOptional({
     example: '2024-03-15T10:00:00Z',
@@ -101,5 +119,10 @@ export class RegistrarAnimalSpDto {
   })
   @IsOptional()
   @IsDateString()
-  fecha_rescate?: string;
+  fecha_movimiento?: string;
+
+  @ApiPropertyOptional({ example: 'https://cdn.example.com/img/rex.jpg' })
+  @IsOptional()
+  @IsString()
+  url_imagen?: string;
 }
