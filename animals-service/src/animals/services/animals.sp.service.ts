@@ -1,6 +1,17 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { RegistrarAnimalSpDto } from '../dto/registrar-animal-sp.dto';
+import type {
+  Animal,
+  AnimalImagen,
+  EtiquetaAnimal,
+  Etiqueta,
+} from '@prisma/client';
+
+export interface AnimalConRelaciones extends Animal {
+  imagenes: AnimalImagen[];
+  etiquetas: (EtiquetaAnimal & { etiqueta: Etiqueta })[];
+}
 
 @Injectable()
 export class AnimalsSpService {
@@ -8,7 +19,7 @@ export class AnimalsSpService {
 
   async registrarAnimalCompleto(
     dto: RegistrarAnimalSpDto,
-  ): Promise<{ id_animal_creado: string }> {
+  ): Promise<AnimalConRelaciones> {
     const tamanoMap: Record<string, string> = {
       miniatura: 'miniatura',
       pequeno: 'pequeño',
@@ -51,6 +62,14 @@ export class AnimalsSpService {
       );
     }
 
-    return { id_animal_creado: id };
+    const animal = await this.prisma.animal.findUniqueOrThrow({
+      where: { id_animal: id },
+      include: {
+        imagenes: true,
+        etiquetas: { include: { etiqueta: true } },
+      },
+    });
+
+    return animal;
   }
 }
