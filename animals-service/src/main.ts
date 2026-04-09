@@ -18,15 +18,11 @@ interface BigIntWithToJSON {
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Configurar CORS antes que cualquier otra cosa
   app.enableCors({
     origin: [
       'https://huellitas-callejeras.duckdns.org',
       'http://huellitas-callejeras.duckdns.org',
-      'https://hc-backend.duckdns.org',
       'http://localhost:3000',
-      'http://localhost:5173',
-      'http://localhost:4200',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
