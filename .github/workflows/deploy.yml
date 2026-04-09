@@ -46,4 +46,3 @@ jobs:
             docker image prune -f
             echo "Deploy completado"
             docker ps | grep backend
-            

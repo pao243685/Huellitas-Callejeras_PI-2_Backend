@@ -7,7 +7,7 @@ import {
   IsEnum,
   IsNumber,
 } from 'class-validator';
-import { TamanoLista, SexoAnimal } from '@prisma/client';
+import { TamanoLista, SexoAnimal, EstadoAnimal } from '@prisma/client';
 import { Transform } from 'class-transformer';
 
 const toBoolean = ({ value }: { value: unknown }): boolean => {
@@ -21,57 +21,60 @@ const toBoolean = ({ value }: { value: unknown }): boolean => {
 
 export class CreateAnimalDto {
   @IsString()
-  nombre!: string;
+  nombre: string;
+
+  @IsEnum(EstadoAnimal)
+  estado: EstadoAnimal;
 
   @IsString()
-  especie!: string;
+  especie: string;
 
   @IsString()
-  raza!: string;
+  raza: string;
 
   @IsInt()
-  @Transform(({ value }) => parseInt(value as string, 10))
-  edad!: number;
+  @Transform(({ value }) => parseInt(value, 10))
+  edad: number;
 
   @IsOptional()
   @IsEnum(['meses', 'años'])
   unidad_edad?: 'meses' | 'años';
 
   @IsNumber()
-  @Transform(({ value }) => parseFloat(value as string))
-  peso!: number;
+  @Transform(({ value }) => parseFloat(value))
+  peso: number;
 
   @IsEnum(SexoAnimal)
-  sexo!: SexoAnimal;
+  sexo: SexoAnimal;
 
   @IsOptional()
   @IsString()
   imagen?: string;
 
   @IsEnum(TamanoLista)
-  tamano!: TamanoLista;
+  tamano: TamanoLista;
 
   @IsBoolean()
   @Transform(toBoolean)
-  enfermedad_no_tratable!: boolean;
+  enfermedad_no_tratable: boolean;
 
   @IsBoolean()
   @Transform(toBoolean)
-  discapacidad!: boolean;
+  discapacidad: boolean;
 
   @IsBoolean()
   @Transform(toBoolean)
-  es_agresivo!: boolean;
+  es_agresivo: boolean;
 
   @IsString()
-  lugar!: string;
+  lugar: string;
 
   @IsString()
-  descripcion!: string;
+  descripcion: string;
 
   @IsUUID()
-  refugio_id!: string;
+  refugio_id: string;
 
   @IsUUID()
-  usuario_id!: string;
+  usuario_id: string;
 }
