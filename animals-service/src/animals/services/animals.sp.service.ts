@@ -29,43 +29,39 @@ export class AnimalsSpService {
     };
 
     const tamanoDb = tamanoMap[dto.tamano] ?? dto.tamano;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const estado = dto.estado || 'adopcion';
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const tipoMovimiento = dto.tipo_movimiento || 'entrada';
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const motivo = dto.motivo || 'rescate';
     const fechaMovimiento = dto.fecha_movimiento
       ? new Date(dto.fecha_movimiento)
       : new Date();
 
-    const result = await this.prisma.$queryRaw<{
-      sp_registrar_animal_completo: string;
-    }>`
-    SELECT sp_registrar_animal_completo(
-      ${dto.nombre}::VARCHAR(100),
-      ${dto.especie}::VARCHAR(100),
-      ${dto.raza}::VARCHAR(100),
-      ${dto.edad}::INTEGER,
-      ${dto.peso}::DECIMAL(10,2),
-      ${dto.sexo}::TEXT,
-      ${tamanoDb}::TEXT,
-      ${dto.enfermedad_no_tratable}::BOOLEAN,
-      ${dto.discapacidad}::BOOLEAN,
-      ${dto.es_agresivo}::BOOLEAN,
-      ${dto.lugar}::TEXT,
-      ${dto.descripcion}::TEXT,
-      ${dto.refugio_id}::UUID,
-      ${dto.usuario_id}::UUID,
-      ${dto.url_imagen ?? null}::TEXT,
-      ${fechaMovimiento}::TIMESTAMP
-    )
-  `;
+    await this.prisma.$queryRaw`
+      SELECT sp_registrar_animal_completo(
+        ${dto.nombre}::VARCHAR(100),
+        ${dto.especie}::VARCHAR(100),
+        ${dto.raza}::VARCHAR(100),
+        ${dto.edad}::INTEGER,
+        ${dto.peso}::DECIMAL(10,2),
+        ${dto.sexo}::TEXT,
+        ${tamanoDb}::TEXT,
+        ${dto.enfermedad_no_tratable}::BOOLEAN,
+        ${dto.discapacidad}::BOOLEAN,
+        ${dto.es_agresivo}::BOOLEAN,
+        ${dto.lugar}::TEXT,
+        ${dto.descripcion}::TEXT,
+        ${dto.refugio_id}::UUID,
+        ${dto.usuario_id}::UUID,
+        ${dto.url_imagen}::TEXT,
+        ${fechaMovimiento}::TIMESTAMP
+      )
+    `;
 
-    const animalId = result.sp_registrar_animal_completo;
-
-    const animal = await this.prisma.animal.findUnique({
-      where: { id_animal: animalId },
+    const animal = await this.prisma.animal.findFirst({
+      where: {
+        usuario_id: dto.usuario_id,
+        refugio_id: dto.refugio_id,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
       include: {
         imagenes: true,
         etiquetas: { include: { etiqueta: true } },
