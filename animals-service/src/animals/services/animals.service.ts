@@ -2,11 +2,19 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { AnimalsValidationService } from './animals.validation.service';
 import { CreateAnimalDto } from '../dto/create-animal.dto';
 import { UpdateAnimalDto } from '../dto/update-animal.dto';
+import { EstadoAnimal } from '@prisma/client';
+
+const ESTADOS_SOLO_SISTEMA: EstadoAnimal[] = [
+  EstadoAnimal.adoptado,
+  EstadoAnimal.defuncion,
+  EstadoAnimal.extraviado,
+];
 
 @Injectable()
 export class AnimalsService {
@@ -74,7 +82,7 @@ export class AnimalsService {
     return this.prisma.animal.create({
       data: {
         nombre: dto.nombre,
-        estado: dto.estado,
+        estado: EstadoAnimal.adopcion,
         especie: dto.especie,
         raza: dto.raza,
         edad: edadEnMeses,
@@ -100,7 +108,20 @@ export class AnimalsService {
   }
 
   async update(id: string, dto: UpdateAnimalDto, refugioId: string) {
-    await this.validation.validateAnimalPertenece(id, refugioId);
+    const animal = await this.validation.validateAnimalPertenece(id, refugioId);
+
+    if (animal.estado === EstadoAnimal.defuncion) {
+      throw new BadRequestException(
+        'No se puede modificar un animal con estado de defunción.',
+      );
+    }
+
+    if (dto.estado !== undefined && ESTADOS_SOLO_SISTEMA.includes(dto.estado)) {
+      throw new BadRequestException(
+        `El estado "${dto.estado}" solo puede asignarse mediante un movimiento registrado. ` +
+          `Los estados permitidos en edición directa son: adopcion, recuperacion.`,
+      );
+    }
 
     if (dto.refugio_id) {
       await this.validation.validateRefugio(dto.refugio_id);
@@ -119,7 +140,7 @@ export class AnimalsService {
       );
     }
 
-    const animal = await this.prisma.animal.update({
+    const animalActualizado = await this.prisma.animal.update({
       where: { id_animal: id },
       data: dataParaActualizar,
       include: {
@@ -141,7 +162,7 @@ export class AnimalsService {
       });
     }
 
-    return animal;
+    return animalActualizado;
   }
 
   async deleteImagen(imagenId: string, refugioId: string) {
@@ -162,7 +183,14 @@ export class AnimalsService {
   }
 
   async delete(id: string, refugioId: string) {
-    await this.validation.validateAnimalPertenece(id, refugioId);
+    const animal = await this.validation.validateAnimalPertenece(id, refugioId);
+
+    if (animal.estado === EstadoAnimal.defuncion) {
+      throw new BadRequestException(
+        'No se puede eliminar un animal con estado de defunción. El expediente debe conservarse como registro histórico.',
+      );
+    }
+
     await this.prisma.animal.delete({ where: { id_animal: id } });
     return { message: 'Animal eliminado', id };
   }
