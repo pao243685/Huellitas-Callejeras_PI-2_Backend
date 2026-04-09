@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsEnum,
   IsNumber,
+  IsDateString,
 } from 'class-validator';
 import { TamanoLista, SexoAnimal } from '@prisma/client';
 import { Transform } from 'class-transformer';
@@ -77,4 +78,16 @@ export class CreateAnimalDto {
 
   @IsEnum(['adopcion', 'recuperacion'])
   estado!: string;
+
+  @IsOptional()
+  @IsString()
+  tipo_movimiento?: string;
+
+  @IsOptional()
+  @IsString()
+  motivo?: string;
+
+  @IsOptional()
+  @IsDateString()
+  fecha_movimiento?: string;
 }

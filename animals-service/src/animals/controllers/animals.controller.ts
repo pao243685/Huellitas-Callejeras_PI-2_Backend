@@ -87,10 +87,10 @@ export class AnimalsController {
       usuario_id: dto.usuario_id,
       refugio_id: dto.refugio_id,
       url_imagen: urlImagen,
-      estado: 'adopcion',
-      tipo_movimiento: 'entrada',
-      motivo: 'rescate',
-      fecha_movimiento: new Date().toISOString(),
+      estado: dto.estado,
+      tipo_movimiento: dto.tipo_movimiento || 'entrada',
+      motivo: dto.motivo || 'rescate',
+      fecha_movimiento: dto.fecha_movimiento,
     };
 
     return this.animalsSpService.registrarAnimalCompleto(spDto);
