@@ -19,10 +19,11 @@ export class UsersService {
 
   async findByRefugio(refugioId: string) {
     await this.validation.validateRefugio(refugioId);
-    return this.prisma.usuario.findMany({
+    const users = await this.prisma.usuario.findMany({
       where: { refugio_id: refugioId },
       include: { refugio: true, rol: true },
     });
+    return users.map((u) => this.omitPassword(u));
   }
 
   async findOne(id: string, refugioId: string) {
@@ -36,7 +37,7 @@ export class UsersService {
     if (user.refugio_id !== refugioId) {
       throw new ForbiddenException('Este usuario no pertenece a tu refugio');
     }
-    return user;
+    return this.omitPassword(user);
   }
 
   async create(dto: UsersDto) {
@@ -51,7 +52,7 @@ export class UsersService {
 
     const hashedPassword = await bcrypt.hash(dto.contrasena, 10);
 
-    return this.prisma.usuario.create({
+    const newUser = await this.prisma.usuario.create({
       data: {
         nombre: dto.nombre,
         apellido_p: dto.apellido_p,
@@ -64,6 +65,8 @@ export class UsersService {
         refugio_id: dto.refugio_id,
       },
     });
+
+    return this.omitPassword(newUser);
   }
 
   async update(id: string, dto: UpdateUsersDto, refugioId: string) {
@@ -85,15 +88,25 @@ export class UsersService {
       delete data.contrasena;
     }
 
-    return this.prisma.usuario.update({
+    const updated = await this.prisma.usuario.update({
       where: { id_usuario: id },
       data,
     });
+
+    return this.omitPassword(updated);
   }
 
   async delete(id: string, refugioId: string) {
     await this.findOne(id, refugioId);
     await this.prisma.usuario.delete({ where: { id_usuario: id } });
     return { message: 'Usuario eliminado', id };
+  }
+
+  private omitPassword<T extends { contrasena: string }>(
+    user: T,
+  ): Omit<T, 'contrasena'> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { contrasena: _, ...rest } = user;
+    return rest;
   }
 }
