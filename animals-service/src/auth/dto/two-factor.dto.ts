@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsString, IsBoolean, Length, Optional } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsBoolean,
+  Length,
+  IsOptional,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 /**
@@ -11,7 +17,7 @@ export class VerifyTwoFactorDto {
     example: '123456',
     required: false,
   })
-  @Optional()
+  @IsOptional()
   @IsString()
   @Length(6, 6, { message: 'El código debe ser de 6 dígitos' })
   token?: string;
@@ -21,7 +27,7 @@ export class VerifyTwoFactorDto {
     example: 'JBSWY3DPEBLW64TMMQ======',
     required: false,
   })
-  @Optional()
+  @IsOptional()
   @IsString()
   secret?: string;
 
@@ -31,7 +37,7 @@ export class VerifyTwoFactorDto {
   })
   @IsNotEmpty({ message: 'enabled es requerido' })
   @IsBoolean()
-  enabled: boolean;
+  enabled!: boolean;
 }
 
 /**
@@ -45,7 +51,7 @@ export class CompleteTwoFactorLoginDto {
   })
   @IsNotEmpty({ message: 'El userId es requerido' })
   @IsString()
-  userId: string;
+  userId!: string;
 
   @ApiProperty({
     description: 'Código TOTP de 6 dígitos desde el authenticator',
@@ -54,5 +60,5 @@ export class CompleteTwoFactorLoginDto {
   @IsNotEmpty({ message: 'El código TOTP es requerido' })
   @IsString()
   @Length(6, 6, { message: 'El código debe ser de 6 dígitos' })
-  token: string;
+  token!: string;
 }

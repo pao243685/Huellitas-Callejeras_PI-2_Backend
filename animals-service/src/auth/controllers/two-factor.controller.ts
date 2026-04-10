@@ -133,12 +133,7 @@ export class TwoFactorController {
   @ApiResponse({ status: 401, description: 'No autenticado' })
   async toggleTwoFactor(
     @CurrentUser() user: UserResponse,
-    @Body()
-    body: {
-      token?: string;
-      secret?: string;
-      enabled: boolean;
-    },
+    @Body() body: VerifyTwoFactorDto,
   ) {
     // Si quiere desactivar, no necesita validar código
     if (!body.enabled) {
@@ -243,10 +238,9 @@ export class TwoFactorController {
     }
 
     // Buscar el usuario en BD para obtener el secret
-    const userWithSecret = await this.prisma.usuario.findUnique({
+    const userWithSecret = (await this.prisma.usuario.findUnique({
       where: { id_usuario: dto.userId },
-      select: { twoFactorSecret: true },
-    });
+    })) as { twoFactorSecret?: string | null } | null;
 
     if (!userWithSecret?.twoFactorSecret) {
       throw new UnauthorizedException('No se encontró el secret de 2FA');

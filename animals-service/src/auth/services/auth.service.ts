@@ -10,6 +10,7 @@ import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
 import { JwtPayload, UserResponse } from '../interfaces/jwt.interfaces';
 import * as bcrypt from 'bcrypt';
+import { authenticator } from 'otplib';
 
 @Injectable()
 export class AuthService {
@@ -114,6 +115,35 @@ export class AuthService {
 
     // Si 2FA está habilitado, no retornar JWT aún
     if (user.twoFactorEnabled) {
+      const twoFactorSecret = (user as { twoFactorSecret?: string | null })
+        .twoFactorSecret;
+
+      if (loginDto.totpCode && twoFactorSecret) {
+        const isValidToken = authenticator.verify({
+          token: loginDto.totpCode,
+          secret: twoFactorSecret,
+        });
+
+        if (!isValidToken) {
+          throw new UnauthorizedException('Código TOTP inválido o expirado');
+        }
+
+        const token = this.generateToken({
+          id_usuario: user.id_usuario,
+          email: user.email,
+          rol: user.rol,
+          refugio: user.refugio,
+        });
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { contrasena: _, ...userWithoutPassword } = user;
+
+        return {
+          user: userWithoutPassword,
+          access_token: token,
+        };
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { contrasena: _, twoFactorSecret: __, ...userBasic } = user;
       return {

@@ -66,4 +66,4 @@ async function bootstrap() {
   console.log(`Animals Service corriendo en http://localhost:${port}`);
   console.log(`Swagger en http://localhost:${port}/api/v1/docs`);
 }
-bootstrap();
+void bootstrap();
