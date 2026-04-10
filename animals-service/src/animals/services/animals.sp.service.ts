@@ -36,8 +36,10 @@ export class AnimalsSpService {
       ? new Date(dto.fecha_movimiento)
       : new Date();
 
-    const result = await this.prisma.$queryRaw<any[]>`
-      SELECT sp_registrar_animal_completo(
+    
+    let animalId;
+    await this.prisma.$executeRaw`
+      CALL sp_registrar_animal_completo(
         ${dto.nombre}::VARCHAR(100),
         ${dto.especie}::VARCHAR(100),
         ${dto.raza}::VARCHAR(100),
@@ -52,13 +54,23 @@ export class AnimalsSpService {
         ${dto.descripcion}::TEXT,
         ${dto.refugio_id}::UUID,
         ${dto.usuario_id}::UUID,
-        ${dto.estado}::TEXT,
-        ${dto.url_imagen}::TEXT,
+        ${animalId}::UUID,
+        ${dto.url_imagen ? dto.url_imagen : null}::TEXT,
         ${fechaMovimiento}::TIMESTAMP
-      ) as id
+      )
     `;
+  
+    const result = await this.prisma.animal.findFirst({
+      where: {
+        nombre: dto.nombre,
+        refugio_id: dto.refugio_id
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
 
-    const animalId = result[0]?.id;
+    animalId = result?.id_animal;
 
     if (!animalId) {
       throw new BadRequestException('No se pudo obtener el ID del animal creado');

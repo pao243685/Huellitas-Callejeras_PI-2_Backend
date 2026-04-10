@@ -153,7 +153,7 @@ export class TwoFactorController {
       );
     }
 
-    const isValid = this.twoFactorService.verifyToken(body.token, body.secret);
+    const isValid = await this.twoFactorService.verifyToken(body.token, body.secret);
     if (!isValid) {
       throw new UnauthorizedException('Código TOTP inválido o expirado');
     }
@@ -247,7 +247,7 @@ export class TwoFactorController {
     }
 
     // Validar el token
-    const isValid = this.twoFactorService.verifyToken(
+    const isValid = await this.twoFactorService.verifyToken(
       dto.token,
       userWithSecret.twoFactorSecret,
     );

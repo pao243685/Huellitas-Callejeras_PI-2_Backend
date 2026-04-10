@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'src/shared/prisma/prisma.service';
+import { PrismaService } from '../../shared/prisma/prisma.service';
 import { CreateRolDto } from '../dto/create-rol.dto';
 import { UpdateRolDto } from '../dto/update-rol.dto';
 import { RolValidationService } from './rol.validate.service';

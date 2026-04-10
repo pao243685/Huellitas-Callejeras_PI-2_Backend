@@ -10,7 +10,7 @@ import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
 import { JwtPayload, UserResponse } from '../interfaces/jwt.interfaces';
 import * as bcrypt from 'bcrypt';
-import { authenticator } from 'otplib';
+import { OTP } from 'otplib';
 
 @Injectable()
 export class AuthService {
@@ -119,10 +119,11 @@ export class AuthService {
         .twoFactorSecret;
 
       if (loginDto.totpCode && twoFactorSecret) {
-        const isValidToken = authenticator.verify({
+        const otp = new OTP();
+        const isValidToken = (await otp.verify({
           token: loginDto.totpCode,
           secret: twoFactorSecret,
-        });
+        })).valid;
 
         if (!isValidToken) {
           throw new UnauthorizedException('Código TOTP inválido o expirado');

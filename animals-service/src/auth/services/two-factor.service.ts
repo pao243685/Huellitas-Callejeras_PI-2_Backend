@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
-import { authenticator } from 'otplib';
+import { OTP } from 'otplib';
 import * as qrcode from 'qrcode';
 
 @Injectable()
@@ -12,12 +12,13 @@ export class TwoFactorService {
    * Se usa antes de activar 2FA
    */
   async generateSecret(userEmail: string, userName: string) {
-    const secret = authenticator.generateSecret({
-      name: `Huellitas Callejeras (${userEmail})`,
+    const otp = new OTP();
+    const secret = otp.generateSecret();
+    const otpAuthUrl = otp.generateURI({
       issuer: 'Huellitas Callejeras',
+      label: userEmail,
+      secret,
     });
-
-    const otpAuthUrl = authenticator.keyuri(userEmail, 'Huellitas Callejeras', secret);
     const qrCodeUrl = await qrcode.toDataURL(otpAuthUrl);
 
     return { secret, qrCodeUrl };
@@ -26,9 +27,11 @@ export class TwoFactorService {
   /**
    * Verifica que el token TOTP sea válido
    */
-  verifyToken(token: string, secret: string): boolean {
+  async verifyToken(token: string, secret: string): Promise<boolean> {
     try {
-      return authenticator.verify({ token, secret });
+      const otp = new OTP();
+      const result = await otp.verify({ token, secret });
+      return result.valid;
     } catch (error) {
       return false;
     }
