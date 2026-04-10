@@ -7,10 +7,7 @@ import * as qrcode from 'qrcode';
 export class TwoFactorService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /**
-   * Genera un nuevo secret TOTP y código QR
-   * Se usa antes de activar 2FA
-   */
+
   async generateSecret(userEmail: string, userName: string) {
     const otp = new OTP();
     const secret = otp.generateSecret();
@@ -24,9 +21,7 @@ export class TwoFactorService {
     return { secret, qrCodeUrl };
   }
 
-  /**
-   * Verifica que el token TOTP sea válido
-   */
+
   async verifyToken(token: string, secret: string): Promise<boolean> {
     try {
       const otp = new OTP();
@@ -37,9 +32,7 @@ export class TwoFactorService {
     }
   }
 
-  /**
-   * Activa 2FA por primera vez guardando el secret
-   */
+
   async enableTwoFactor(userId: string, secret: string) {
     return await this.prisma.usuario.update({
       where: { id_usuario: userId },
@@ -55,9 +48,7 @@ export class TwoFactorService {
     });
   }
 
-  /**
-   * Desactiva 2FA
-   */
+
   async disableTwoFactor(userId: string) {
     return await this.prisma.usuario.update({
       where: { id_usuario: userId },
@@ -73,9 +64,7 @@ export class TwoFactorService {
     });
   }
 
-  /**
-   * Obtiene el estado actual de 2FA del usuario
-   */
+
   async getStatus(userId: string) {
     const user = await this.prisma.usuario.findUnique({
       where: { id_usuario: userId },

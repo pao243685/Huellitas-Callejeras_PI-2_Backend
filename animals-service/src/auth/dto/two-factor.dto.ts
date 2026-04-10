@@ -7,10 +7,7 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-/**
- * DTO para PUT /auth/me/2fa
- * Activa o desactiva 2FA
- */
+
 export class VerifyTwoFactorDto {
   @ApiProperty({
     description: 'Código TOTP de 6 dígitos desde el authenticator',
@@ -40,10 +37,6 @@ export class VerifyTwoFactorDto {
   enabled!: boolean;
 }
 
-/**
- * DTO para POST /auth/2fa/verify
- * Valida el código TOTP durante login y devuelve JWT
- */
 export class CompleteTwoFactorLoginDto {
   @ApiProperty({
     description: 'ID del usuario',

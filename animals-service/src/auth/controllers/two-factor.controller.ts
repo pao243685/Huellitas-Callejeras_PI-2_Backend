@@ -35,11 +35,7 @@ export class TwoFactorController {
     private readonly prisma: PrismaService,
   ) {}
 
-  /**
-   * GET /auth/me/2fa
-   * Obtiene el estado actual de 2FA del usuario
-   * Requiere autenticación con JWT
-   */
+
   @Get('me/2fa')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -63,12 +59,7 @@ export class TwoFactorController {
     return await this.twoFactorService.getStatus(user.id_usuario);
   }
 
-  /**
-   * POST /auth/me/2fa
-   * PASO 1: Genera un nuevo secret TOTP e imagen QR
-   * Requiere autenticación con JWT
-   * El usuario debe escanear el QR y proporcionar el código en PUT
-   */
+
   @Post('me/2fa')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -100,15 +91,6 @@ export class TwoFactorController {
     };
   }
 
-  /**
-   * PUT /auth/me/2fa
-   * PASO 2: Activa/Desactiva 2FA después de validar el código TOTP
-   * Requiere autenticación con JWT + código válido del authenticator
-   * 
-   * Body: { token: "123456", secret: "...", enabled: true/false }
-   * - Si enabled=true: Activa 2FA (requiere token válido)
-   * - Si enabled=false: Desactiva 2FA
-   */
   @Put('me/2fa')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -135,7 +117,7 @@ export class TwoFactorController {
     @CurrentUser() user: UserResponse,
     @Body() body: VerifyTwoFactorDto,
   ) {
-    // Si quiere desactivar, no necesita validar código
+    
     if (!body.enabled) {
       const result = await this.twoFactorService.disableTwoFactor(
         user.id_usuario,
@@ -146,7 +128,7 @@ export class TwoFactorController {
       };
     }
 
-    // Si quiere activar, necesita token y secret válidos
+
     if (!body.token || !body.secret) {
       throw new UnauthorizedException(
         'Para activar 2FA necesitas: token (código de 6 dígitos) y secret',
@@ -169,10 +151,7 @@ export class TwoFactorController {
     };
   }
 
-  /**
-   * DELETE /auth/me/2fa (deprecated)
-   * Alias para desactivar 2FA vía DELETE en lugar de PUT
-   */
+
   @Delete('me/2fa')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -194,15 +173,6 @@ export class TwoFactorController {
     };
   }
 
-  /**
-   * POST /auth/2fa/verify
-   * Valida el código TOTP durante el login y devuelve JWT
-   * NO requiere autenticación con JWT (se usa después de validar email/password)
-   * 
-   * Flujo:
-   * 1. POST /auth/login { email, password } -> respuesta: { requires2FA: true, userId }
-   * 2. POST /auth/2fa/verify { userId, token } -> respuesta: { user, access_token }
-   */
   @Public()
   @Post('2fa/verify')
   @ApiOperation({
@@ -230,14 +200,14 @@ export class TwoFactorController {
   async verifyTOTPAndLogin(
     @Body() dto: CompleteTwoFactorLoginDto,
   ) {
-    // Obtener el usuario para conseguir el secret almacenado
+
     const user = await this.twoFactorService.getStatus(dto.userId);
 
     if (!user.twoFactorEnabled) {
       throw new UnauthorizedException('2FA no está habilitado para este usuario');
     }
 
-    // Buscar el usuario en BD para obtener el secret
+
     const userWithSecret = (await this.prisma.usuario.findUnique({
       where: { id_usuario: dto.userId },
     })) as { twoFactorSecret?: string | null } | null;
@@ -246,7 +216,7 @@ export class TwoFactorController {
       throw new UnauthorizedException('No se encontró el secret de 2FA');
     }
 
-    // Validar el token
+    
     const isValid = await this.twoFactorService.verifyToken(
       dto.token,
       userWithSecret.twoFactorSecret,
@@ -256,7 +226,7 @@ export class TwoFactorController {
       throw new UnauthorizedException('Código TOTP inválido o expirado');
     }
 
-    // Generar y retornar el JWT
+    
     return await this.authService.generateJwtAfter2FA(dto.userId);
   }
 }
