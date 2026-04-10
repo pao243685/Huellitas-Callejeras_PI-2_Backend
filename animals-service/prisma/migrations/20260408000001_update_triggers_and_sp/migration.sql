@@ -157,7 +157,9 @@ FOR EACH ROW EXECUTE FUNCTION fn_reversar_estado_en_delete();
 -- =====================================================
 -- CAMBIO 4: sp_registrar_animal_completo (agregar usuario_id)
 -- =====================================================
-CREATE OR REPLACE PROCEDURE sp_registrar_animal_completo(
+DROP PROCEDURE IF EXISTS sp_registrar_animal_completo;
+
+CREATE PROCEDURE sp_registrar_animal_completo(
     p_nombre                 VARCHAR(100),
     p_especie                VARCHAR(100),
     p_raza                   VARCHAR(100),

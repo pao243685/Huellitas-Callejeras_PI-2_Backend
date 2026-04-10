@@ -94,8 +94,10 @@ model Usuario {
   aceptacion_term Boolean
   rol_id          String    @db.Uuid
   refugio_id      String    @db.Uuid
-  createdAt       DateTime? @default(now()) @db.Timestamp(6)
-  updatedAt       DateTime? @updatedAt @db.Timestamp(6)
+  createdAt           DateTime? @default(now()) @db.Timestamp(6)
+  updatedAt           DateTime? @updatedAt @db.Timestamp(6)
+  twoFactorSecret     String?
+  twoFactorEnabled    Boolean @default(false)
 
   rol     Rol     @relation(fields: [rol_id], references: [id_roles], onDelete: Cascade)
   refugio Refugio @relation(fields: [refugio_id], references: [id_refugio], onDelete: Cascade)

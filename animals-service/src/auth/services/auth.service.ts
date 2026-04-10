@@ -112,6 +112,18 @@ export class AuthService {
       throw new UnauthorizedException('Usuario inactivo');
     }
 
+    // Si 2FA está habilitado, no retornar JWT aún
+    if (user.twoFactorEnabled) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { contrasena: _, twoFactorSecret: __, ...userBasic } = user;
+      return {
+        requires2FA: true,
+        userId: user.id_usuario,
+        user: userBasic,
+        message: 'Por favor, ingresa tu código de verificación de 2 factores',
+      };
+    }
+
     const token = this.generateToken({
       id_usuario: user.id_usuario,
       email: user.email,
@@ -142,6 +154,43 @@ export class AuthService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { contrasena: _, ...userWithoutPassword } = user;
     return userWithoutPassword as UserResponse;
+  }
+
+  /**
+   * Genera JWT después de validar exitosamente 2FA
+   * Se usa cuando el usuario proporciona un código TOTP válido
+   */
+  async generateJwtAfter2FA(userId: string) {
+    const user = await this.prisma.usuario.findUnique({
+      where: { id_usuario: userId },
+      include: {
+        rol: true,
+        refugio: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Usuario no encontrado');
+    }
+
+    if (!user.activo) {
+      throw new UnauthorizedException('Usuario inactivo');
+    }
+
+    const token = this.generateToken({
+      id_usuario: user.id_usuario,
+      email: user.email,
+      rol: user.rol,
+      refugio: user.refugio,
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { contrasena: _, ...userWithoutPassword } = user;
+
+    return {
+      user: userWithoutPassword,
+      access_token: token,
+    };
   }
 
   private generateToken(user: {
