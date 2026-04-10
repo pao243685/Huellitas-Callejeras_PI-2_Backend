@@ -37,17 +37,23 @@ export class MovementsService {
     await this.validation.validateAnimalPertenece(dto.animal_id, refugioId);
     this.validation.validateMotivoByTipo(dto.tipo_movimiento, dto.motivo);
 
-    return this.prisma.movimiento.create({
-      data: {
-        tipo_movimiento: dto.tipo_movimiento,
-        motivo: dto.motivo,
-        ...(dto.fecha_movimiento && {
-          fecha_movimiento: new Date(dto.fecha_movimiento),
-        }),
-        animal_id: dto.animal_id,
-      },
-      include: { animal: true },
-    });
+    const fecha = dto.fecha_movimiento
+      ? new Date(dto.fecha_movimiento)
+      : new Date(new Date().toISOString());
+
+    try {
+      return await this.prisma.movimiento.create({
+        data: {
+          tipo_movimiento: dto.tipo_movimiento,
+          motivo: dto.motivo,
+          fecha_movimiento: fecha,
+          animal_id: dto.animal_id,
+        },
+        include: { animal: true },
+      });
+    } catch (error: unknown) {
+      this.handleMovimientoError(error);
+    }
   }
 
   async delete(id: string, refugioId: string) {
@@ -64,5 +70,18 @@ export class MovementsService {
 
     await this.prisma.movimiento.delete({ where: { id_movimiento: id } });
     return { message: 'Movimiento eliminado', id };
+  }
+
+  private handleMovimientoError(error: unknown): never {
+    const message = error instanceof Error ? error.message : '';
+
+    if (message.includes('P0001')) {
+      const match = message.match(/message: "(.+?)", severity/s);
+      if (match?.[1]) {
+        throw new BadRequestException(match[1].replace(/\\"/g, '').trim());
+      }
+    }
+
+    throw error;
   }
 }
