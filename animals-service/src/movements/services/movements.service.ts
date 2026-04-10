@@ -73,22 +73,15 @@ export class MovementsService {
   }
 
   private handleMovimientoError(error: unknown): never {
-    const prismaError = error as {
-      code?: string;
-      meta?: { code?: string; message?: string };
-      message?: string;
-    };
+    const message = error instanceof Error ? error.message : '';
 
-    const pgStateCode = prismaError.meta?.code;
-    const pgMessage =
-      prismaError.meta?.message ??
-      (error instanceof Error ? error.message : null);
-
-    if (pgStateCode === 'P0001' && pgMessage) {
-      throw new BadRequestException(
-        pgMessage.replace(/^ERROR:\s*/i, '').trim(),
-      );
+    if (message.includes('P0001')) {
+      const match = message.match(/message: "(.+?)", severity/s);
+      if (match?.[1]) {
+        throw new BadRequestException(match[1].replace(/\\"/g, '').trim());
+      }
     }
+
     throw error;
   }
 }
