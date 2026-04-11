@@ -41,6 +41,12 @@ export class MovementsService {
       ? new Date(dto.fecha_movimiento + 'T12:00:00')
       : new Date();
 
+    await this.validation.validateFechaSecuencial(
+      dto.animal_id,
+      fecha,
+      dto.tipo_movimiento,
+    );
+
     try {
       return await this.prisma.movimiento.create({
         data: {

@@ -65,4 +65,25 @@ export class MovementsValidationService {
       );
     }
   }
+
+  async validateFechaSecuencial(
+    animalId: string,
+    nuevaFecha: Date,
+    tipo: MovimientoTipo,
+  ) {
+    const ultimoMovimiento = await this.prisma.movimiento.findFirst({
+      where: { animal_id: animalId },
+      orderBy: { fecha_movimiento: 'desc' },
+    });
+
+    if (!ultimoMovimiento) return;
+
+    if (nuevaFecha < ultimoMovimiento.fecha_movimiento) {
+      const formatDate = (date: Date) => date.toLocaleDateString('es-MX');
+      throw new BadRequestException(
+        `La fecha del ${tipo === MovimientoTipo.entrada ? 'ingreso' : 'egreso'} (${formatDate(nuevaFecha)}) ` +
+          `no puede ser anterior al último movimiento del animal (${formatDate(ultimoMovimiento.fecha_movimiento)}).`,
+      );
+    }
+  }
 }
