@@ -38,8 +38,8 @@ export class MovementsService {
     this.validation.validateMotivoByTipo(dto.tipo_movimiento, dto.motivo);
 
     const fecha = dto.fecha_movimiento
-      ? new Date(dto.fecha_movimiento)
-      : new Date(new Date().toISOString());
+      ? new Date(dto.fecha_movimiento + 'T12:00:00')
+      : new Date();
 
     try {
       return await this.prisma.movimiento.create({
