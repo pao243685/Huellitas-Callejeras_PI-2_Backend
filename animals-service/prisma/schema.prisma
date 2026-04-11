@@ -103,6 +103,9 @@ model Usuario {
   refugio Refugio @relation(fields: [refugio_id], references: [id_refugio], onDelete: Cascade)
   animales Animal[]
 
+  // Índices para optimizar consultas
+  @@index([refugio_id])   // Búsqueda por refugio
+  @@index([rol_id])       // Búsqueda por rol
   @@map("usuarios")
 }
 
@@ -132,6 +135,12 @@ model Animal {
   imagenes    AnimalImagen[]
   etiquetas   EtiquetaAnimal[]
 
+  // Índices para optimizar consultas frecuentes
+  @@index([refugio_id])    // Búsqueda por refugio
+  @@index([usuario_id])    // Búsqueda por usuario que registró
+  @@index([estado])        // Filtros por estado (adoptado, extraviado, etc.)
+  @@index([especie])       // Búsqueda por tipo de especie
+  @@index([nombre])        // Búsqueda por nombre del animal
   @@map("animales")
 }
 
@@ -146,6 +155,9 @@ model Movimiento {
 
   animal Animal @relation(fields: [animal_id], references: [id_animal], onDelete: Cascade)
 
+  // Índices para optimizar consultas y reportes
+  @@index([animal_id])        // Búsqueda de movimientos por animal
+  @@index([fecha_movimiento]) // Filtros por rango de fechas (reportes)
   @@map("movimientos")
 }
 
@@ -156,6 +168,8 @@ model AnimalImagen {
 
   animal Animal @relation(fields: [animal_id], references: [id_animal], onDelete: Cascade)
 
+  // Índice para acelerar búsqueda de imágenes por animal
+  @@index([animal_id])
   @@map("animal_imagen")
 }
 
@@ -181,5 +195,7 @@ model EtiquetaAnimal {
   etiqueta Etiqueta @relation(fields: [etiqueta_id], references: [id_etiqueta], onDelete: Cascade)
 
   @@id([animal_id, etiqueta_id])
+  // Índice para búsqueda inversa: animales por etiqueta
+  @@index([etiqueta_id])
   @@map("etiqueta_animal")
 }
