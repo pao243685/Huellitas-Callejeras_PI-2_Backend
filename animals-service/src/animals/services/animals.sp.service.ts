@@ -37,7 +37,7 @@ export class AnimalsSpService {
       : new Date();
 
     const result = await this.prisma.$queryRaw<any[]>`
-      SELECT sp_registrar_animal_completo(
+      SELECT fn_registrar_animal_completo(
         ${dto.nombre}::VARCHAR(100),
         ${dto.especie}::VARCHAR(100),
         ${dto.raza}::VARCHAR(100),
