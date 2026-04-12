@@ -30,6 +30,21 @@ export class StatisticsService {
     return refugio;
   }
 
+  private formatearEdad(meses: number): string {
+    if (meses < 12) {
+      return `${meses} ${meses === 1 ? 'mes' : 'meses'}`;
+    }
+
+    const años = Math.floor(meses / 12);
+    const mesesRestantes = meses % 12;
+
+    if (mesesRestantes === 0) {
+      return `${años} ${años === 1 ? 'año' : 'años'}`;
+    }
+
+    return `${años} ${años === 1 ? 'año' : 'años'} y ${mesesRestantes} ${mesesRestantes === 1 ? 'mes' : 'meses'}`;
+  }
+
   async getIndicadores(refugioId: string) {
     const refugio = await this.validateRefugio(refugioId);
 
@@ -171,16 +186,16 @@ export class StatisticsService {
       `,
     );
 
-    const animalesConEdadEnAnios = animales.map((animal) => ({
+    const animalesConEdadFormateada = animales.map((animal) => ({
       ...animal,
-      edad: Math.floor(animal.edad / 12),
+      edad: this.formatearEdad(animal.edad),
     }));
 
     return {
       refugio_id: refugioId,
       refugio_nombre: refugio.nombre,
-      total_activos: animalesConEdadEnAnios.length,
-      animales: animalesConEdadEnAnios,
+      total_activos: animalesConEdadFormateada.length,
+      animales: animalesConEdadFormateada,
     };
   }
 }
