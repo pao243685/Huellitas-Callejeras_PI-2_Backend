@@ -171,11 +171,16 @@ export class StatisticsService {
       `,
     );
 
+    const animalesConEdadEnAnios = animales.map((animal) => ({
+      ...animal,
+      edad: Math.floor(animal.edad / 12),
+    }));
+
     return {
       refugio_id: refugioId,
       refugio_nombre: refugio.nombre,
-      total_activos: animales.length,
-      animales,
+      total_activos: animalesConEdadEnAnios.length,
+      animales: animalesConEdadEnAnios,
     };
   }
 }
