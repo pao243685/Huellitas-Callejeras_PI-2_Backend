@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 import { MovementsValidationService } from './movements.validation.service';
 import { CreateMovementDto } from '../dto/create-movement.dto';
-import { MovimientoMotivo } from '@prisma/client';
+import { MovimientoMotivo, MovimientoTipo, EstadoAnimal } from '@prisma/client';
 
 @Injectable()
 export class MovementsService {
@@ -34,11 +34,32 @@ export class MovementsService {
   }
 
   async create(dto: CreateMovementDto, refugioId: string) {
-    await this.validation.validateAnimalPertenece(dto.animal_id, refugioId);
+    const animal = await this.validation.validateAnimalPertenece(
+      dto.animal_id,
+      refugioId,
+    );
+
+    if (
+      dto.tipo_movimiento === MovimientoTipo.entrada &&
+      dto.motivo === MovimientoMotivo.retorno
+    ) {
+      const estadosQueAceptanRetorno: EstadoAnimal[] = [
+        EstadoAnimal.adoptado,
+        EstadoAnimal.extraviado,
+      ];
+      if (!estadosQueAceptanRetorno.includes(animal.estado)) {
+        throw new BadRequestException(
+          `El motivo "retorno" solo aplica para animales que fueron adoptados o extraviados. ` +
+            `El estado actual del animal es "${animal.estado}". ` +
+            `Para registrar una nueva entrada use el motivo "rescate".`,
+        );
+      }
+    }
+
     this.validation.validateMotivoByTipo(dto.tipo_movimiento, dto.motivo);
 
     const fecha = dto.fecha_movimiento
-      ? new Date(dto.fecha_movimiento + 'T12:00:00')
+      ? new Date(dto.fecha_movimiento)
       : new Date();
 
     await this.validation.validateFechaSecuencial(
@@ -70,7 +91,7 @@ export class MovementsService {
 
     if (movimiento.motivo === MovimientoMotivo.defuncion) {
       throw new BadRequestException(
-        'No se puede eliminar un movimiento de defunción. Este registro es permanente.',
+        'No se puede eliminar un movimiento de defunción. Este registro es permanente por integridad del historial veterinario.',
       );
     }
 

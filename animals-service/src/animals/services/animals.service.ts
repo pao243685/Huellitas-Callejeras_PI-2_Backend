@@ -16,6 +16,23 @@ const ESTADOS_SOLO_SISTEMA: EstadoAnimal[] = [
   EstadoAnimal.extraviado,
 ];
 
+const CAMPOS_DESCRIPTIVOS_EDITABLES = [
+  'nombre',
+  'descripcion',
+  'lugar',
+  'raza',
+  'especie',
+  'sexo',
+  'tamano',
+  'edad',
+  'peso',
+  'enfermedad_no_tratable',
+  'discapacidad',
+  'es_agresivo',
+  'imagen',
+  'unidad_edad',
+];
+
 @Injectable()
 export class AnimalsService {
   constructor(
@@ -110,29 +127,52 @@ export class AnimalsService {
   async update(id: string, dto: UpdateAnimalDto, refugioId: string) {
     const animal = await this.validation.validateAnimalPertenece(id, refugioId);
 
-    if (animal.estado === EstadoAnimal.defuncion) {
-      throw new BadRequestException(
-        'No se puede modificar un animal con estado de defunción.',
-      );
-    }
+    const isTerminal = ESTADOS_SOLO_SISTEMA.includes(
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      animal.estado as EstadoAnimal,
+    );
 
-    if (dto.estado !== undefined && ESTADOS_SOLO_SISTEMA.includes(dto.estado)) {
-      throw new BadRequestException(
-        `El estado "${dto.estado}" solo puede asignarse mediante un movimiento registrado. ` +
-          `Los estados permitidos en edición directa son: adopcion, recuperacion.`,
-      );
-    }
+    if (isTerminal) {
+      if (dto.estado !== undefined) {
+        throw new BadRequestException(
+          `El animal tiene estado "${animal.estado}" asignado automáticamente por un movimiento registrado. ` +
+            `No se puede cambiar el estado directamente. Solo pueden editarse campos descriptivos (nombre, descripción, etc.).`,
+        );
+      }
+      if (dto.refugio_id || dto.usuario_id) {
+        throw new BadRequestException(
+          `No se puede cambiar el refugio o usuario de un animal con estado "${animal.estado}".`,
+        );
+      }
+    } else {
+      if (
+        dto.estado !== undefined &&
+        ESTADOS_SOLO_SISTEMA.includes(dto.estado)
+      ) {
+        throw new BadRequestException(
+          `El estado "${dto.estado}" solo puede asignarse mediante un movimiento registrado. ` +
+            `Los estados permitidos en edición directa son: adopcion, recuperacion.`,
+        );
+      }
 
-    if (dto.refugio_id) {
-      await this.validation.validateRefugio(dto.refugio_id);
-    }
-    if (dto.usuario_id) {
-      await this.validation.validateUsuario(dto.usuario_id);
+      if (dto.refugio_id) {
+        await this.validation.validateRefugio(dto.refugio_id);
+      }
+      if (dto.usuario_id) {
+        await this.validation.validateUsuario(dto.usuario_id);
+      }
     }
 
     const { imagen, unidad_edad, ...dataSinImagen } = dto;
 
-    const dataParaActualizar = { ...dataSinImagen };
+    const dataParaActualizar: Partial<typeof dataSinImagen> = isTerminal
+      ? Object.fromEntries(
+          Object.entries(dataSinImagen).filter(([key]) =>
+            CAMPOS_DESCRIPTIVOS_EDITABLES.includes(key),
+          ),
+        )
+      : { ...dataSinImagen };
+
     if (dataParaActualizar.edad !== undefined) {
       dataParaActualizar.edad = this.toMeses(
         dataParaActualizar.edad,
