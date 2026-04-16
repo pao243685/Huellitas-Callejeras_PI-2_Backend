@@ -90,7 +90,7 @@ export class AnimalsController {
       estado: dto.estado,
       tipo_movimiento: 'entrada',
       motivo: 'rescate',
-      fecha_movimiento: new Date().toISOString(),
+      fecha_movimiento: dto.fecha_movimiento ?? new Date().toISOString(),
     };
 
     return this.animalsSpService.registrarAnimalCompleto(spDto);

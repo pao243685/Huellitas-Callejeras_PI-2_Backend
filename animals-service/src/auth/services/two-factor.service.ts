@@ -7,7 +7,6 @@ import * as qrcode from 'qrcode';
 export class TwoFactorService {
   constructor(private readonly prisma: PrismaService) {}
 
-
   async generateSecret(userEmail: string, userName: string) {
     const otp = new OTP();
     const secret = otp.generateSecret();
@@ -21,7 +20,6 @@ export class TwoFactorService {
     return { secret, qrCodeUrl };
   }
 
-
   async verifyToken(token: string, secret: string): Promise<boolean> {
     try {
       const otp = new OTP();
@@ -31,7 +29,6 @@ export class TwoFactorService {
       return false;
     }
   }
-
 
   async enableTwoFactor(userId: string, secret: string) {
     return await this.prisma.usuario.update({
@@ -48,7 +45,6 @@ export class TwoFactorService {
     });
   }
 
-
   async disableTwoFactor(userId: string) {
     return await this.prisma.usuario.update({
       where: { id_usuario: userId },
@@ -63,7 +59,6 @@ export class TwoFactorService {
       },
     });
   }
-
 
   async getStatus(userId: string) {
     const user = await this.prisma.usuario.findUnique({
