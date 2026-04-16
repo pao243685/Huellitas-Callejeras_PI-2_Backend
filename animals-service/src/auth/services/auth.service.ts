@@ -72,7 +72,7 @@ export class AuthService {
         rol: usuario.rol,
         refugio: usuario.refugio,
       });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      
       const { contrasena: _, ...usuarioSinPassword } = usuario;
 
       return { user: usuarioSinPassword, access_token: token };
@@ -113,7 +113,7 @@ export class AuthService {
       throw new UnauthorizedException('Usuario inactivo');
     }
 
-    // Si 2FA está habilitado, no retornar JWT aún
+    
     if (user.twoFactorEnabled) {
       const twoFactorSecret = (user as { twoFactorSecret?: string | null })
         .twoFactorSecret;
@@ -136,7 +136,7 @@ export class AuthService {
           refugio: user.refugio,
         });
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        
         const { contrasena: _, ...userWithoutPassword } = user;
 
         return {
@@ -145,7 +145,7 @@ export class AuthService {
         };
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      
       const { contrasena: _, twoFactorSecret: __, ...userBasic } = user;
       return {
         requires2FA: true,
@@ -161,7 +161,7 @@ export class AuthService {
       rol: user.rol,
       refugio: user.refugio,
     });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    
     const { contrasena: _, ...userWithoutPassword } = user;
 
     return {
@@ -182,15 +182,12 @@ export class AuthService {
     if (!user || !user.activo) {
       return null;
     }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    
     const { contrasena: _, ...userWithoutPassword } = user;
     return userWithoutPassword as UserResponse;
   }
 
-  /**
-   * Genera JWT después de validar exitosamente 2FA
-   * Se usa cuando el usuario proporciona un código TOTP válido
-   */
+
   async generateJwtAfter2FA(userId: string) {
     const user = await this.prisma.usuario.findUnique({
       where: { id_usuario: userId },
@@ -215,7 +212,7 @@ export class AuthService {
       refugio: user.refugio,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  
     const { contrasena: _, ...userWithoutPassword } = user;
 
     return {
