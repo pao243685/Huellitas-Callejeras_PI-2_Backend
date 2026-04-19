@@ -66,11 +66,23 @@ export class MovementsValidationService {
     }
   }
 
+  validateNotFutureDate(fecha: Date, campo = 'fecha_movimiento'): void {
+    const now = new Date();
+    if (fecha > now) {
+      throw new BadRequestException(
+        `El campo "${campo}" no puede ser una fecha futura. ` +
+          `Valor recibido: ${fecha.toISOString()}. Fecha actual: ${now.toISOString()}.`,
+      );
+    }
+  }
+
   async validateFechaSecuencial(
     animalId: string,
     nuevaFecha: Date,
     tipo: MovimientoTipo,
   ) {
+    this.validateNotFutureDate(nuevaFecha);
+
     const ultimoMovimiento = await this.prisma.movimiento.findFirst({
       where: { animal_id: animalId },
       orderBy: { fecha_movimiento: 'desc' },

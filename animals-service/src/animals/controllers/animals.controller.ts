@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UseGuards,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -25,6 +26,7 @@ import { RegistrarAnimalSpDto } from '../dto/registrar-animal-sp.dto';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { RefugioOwnershipGuard } from '../../auth/guards/refugio-asociado.guard';
+import { RefugioBodyGuard } from '../../auth/guards/refugio-body.guard';
 import type { UserResponse } from '../../auth/interfaces/jwt.interfaces';
 
 const storage = diskStorage({
@@ -34,6 +36,22 @@ const storage = diskStorage({
     cb(null, `${unique}${extname(file.originalname)}`);
   },
 });
+
+function assertNotFutureDate(fecha: string | undefined, campo: string): void {
+  if (!fecha) return;
+  const parsed = new Date(fecha);
+  if (isNaN(parsed.getTime())) {
+    throw new BadRequestException(
+      `El campo "${campo}" no es una fecha válida.`,
+    );
+  }
+  if (parsed > new Date()) {
+    throw new BadRequestException(
+      `El campo "${campo}" no puede ser una fecha futura. ` +
+        `Valor recibido: ${parsed.toISOString()}.`,
+    );
+  }
+}
 
 @Controller('animals')
 export class AnimalsController {
@@ -61,11 +79,17 @@ export class AnimalsController {
 
   @Post()
   @Roles('admin', 'propietario')
+  @UseGuards(RefugioBodyGuard)
   @UseInterceptors(FileInterceptor('imagen', { storage }))
   async create(
     @Body() dto: CreateAnimalDto,
+    @CurrentUser() user: UserResponse,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<AnimalConRelaciones> {
+    const refugioId = dto.refugio_id ?? user.refugio.id_refugio;
+
+    assertNotFutureDate(dto.fecha_movimiento, 'fecha_movimiento');
+
     const urlImagen = file ? `uploads/animals/${file.filename}` : undefined;
 
     const edadEnMeses =
@@ -85,7 +109,7 @@ export class AnimalsController {
       lugar: dto.lugar,
       descripcion: dto.descripcion,
       usuario_id: dto.usuario_id,
-      refugio_id: dto.refugio_id,
+      refugio_id: refugioId,
       url_imagen: urlImagen,
       estado: dto.estado,
       tipo_movimiento: 'entrada',

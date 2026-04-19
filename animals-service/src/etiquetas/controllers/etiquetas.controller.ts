@@ -16,6 +16,7 @@ import { AsignarEtiquetaDto } from '../dto/etiqueta-asignada.dto';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { RefugioOwnershipGuard } from '../../auth/guards/refugio-asociado.guard';
+import { RefugioBodyGuard } from '../../auth/guards/refugio-body.guard';
 import type { UserResponse } from '../../auth/interfaces/jwt.interfaces';
 
 @Controller('etiquetas')
@@ -37,6 +38,7 @@ export class EtiquetasController {
 
   @Post()
   @Roles('admin', 'propietario')
+  @UseGuards(RefugioBodyGuard)
   async create(@Body() dto: CreateEtiquetaDto) {
     return this.etiquetasService.create(dto);
   }
