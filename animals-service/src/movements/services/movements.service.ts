@@ -19,10 +19,6 @@ export class MovementsService {
     });
   }
 
-  async findOne(id: string, refugioId: string) {
-    return this.validation.validateMovimientoPertenece(id, refugioId);
-  }
-
   async findByAnimal(animalId: string, refugioId: string) {
     await this.validation.validateAnimalPertenece(animalId, refugioId);
 

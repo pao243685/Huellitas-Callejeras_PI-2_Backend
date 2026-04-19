@@ -52,12 +52,6 @@ export class MovementsController {
     );
   }
 
-  @Get(':id')
-  @Roles('admin', 'propietario', 'colaborador')
-  async findOne(@Param('id') id: string, @CurrentUser() user: UserResponse) {
-    return this.movementsService.findOne(id, user.refugio.id_refugio);
-  }
-
   @Post()
   @Roles('admin', 'propietario')
   async create(
