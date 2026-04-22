@@ -90,15 +90,15 @@ docker compose logs -f
 - `docker-compose.yml` - configuración de servicios
 
 
-src/
-├── animals/          # Gestión de animales (CRUD + stored procedure de registro)
-├── movements/        # Movimientos de entrada/salida con validación secuencial
-├── statistics/       # Indicadores, historial y alertas via vistas y funciones SQL
-├── etiquetas/        # Sistema de etiquetas asignables a animales
-├── refugio/          # Gestión de refugios y roles
-├── users/            # Administración de usuarios por refugio
-├── auth/             # Autenticación JWT, guards, estrategias y 2FA
-└── shared/           # PrismaService global compartido entre módulos
+- src/
+- ├── animals/          # Gestión de animales (CRUD + stored procedure de registro)
+- ├── movements/        # Movimientos de entrada/salida con validación secuencial
+- ├── statistics/       # Indicadores, historial y alertas via vistas y funciones SQL
+- ├── etiquetas/        # Sistema de etiquetas asignables a animales
+- ├── refugio/          # Gestión de refugios y roles
+- ├── users/            # Administración de usuarios por refugio
+- ├── auth/             # Autenticación JWT, guards, estrategias y 2FA
+- └── shared/           # PrismaService global compartido entre módulos
 
 ## Notas
 
